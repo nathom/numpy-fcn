@@ -18,7 +18,7 @@ def check_grad(model, x_train, y_train):
     raise NotImplementedError("check_grad not implemented.")
 
 
-def checkGradient(x_train, y_train, config):
+def check_gradient(x_train, y_train, config):
     subsetSize = 10  # Feel free to change this
     sample_idx = np.random.randint(0, len(x_train), subsetSize)
     x_train_sample, y_train_sample = x_train[sample_idx], y_train[sample_idx]

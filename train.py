@@ -1,7 +1,11 @@
-import numpy as np
+import json
+
+from tqdm import trange
+
+from neuralnet import NeuralNetwork
 
 
-def train(model, x_train, y_train, x_valid, y_valid, config):
+def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config):
     """
     TODO: Train your model here.
     Learns the weights (parameters) for our model
@@ -21,17 +25,26 @@ def train(model, x_train, y_train, x_valid, y_valid, config):
     """
 
     # Read in the esssential configs
-    batch_size = config["batch_size"]
-    for e in range(config["epochs"]):
-        for i in range(0, len(x_train), batch_size):
+    # batch_size = config["batch_size"]
+    losses = []
+    batch_size = 1
+    for _ in range(config["epochs"]):
+        for i in trange(0, len(x_train), batch_size):
             x_train_batch = x_train[i : i + batch_size]
-            grads = np.array()
+            y_train_batch = y_train[i : i + batch_size]
+            loss = model(x_train_batch, y_train_batch)
+            losses.append(loss)
+            assert loss is not None
+            model.backward()
+
+    with open("loss.json", "w") as f:
+        json.dump(losses, f)
 
     return model
 
 
 # This is the test method
-def modelTest(model, X_test, y_test):
+def model_test(model, X_test, y_test):
     """
     TODO
     Calculates and returns the accuracy & loss on the test set.

@@ -163,6 +163,7 @@ class Layer:
 
         When implementing softmax regression part, just focus on implementing the single-layer case first.
         """
+        assert self.a is not None
         self.dw = deltaCur * self.activation.backward(self.a)
         if gradReqd:
             self.w -= learning_rate * self.dw
@@ -215,10 +216,13 @@ class NeuralNetwork:
         TODO: Compute forward pass through all the layers in the network and return the loss.
         If targets are provided, return loss and accuracy/number of correct predictions as well.
         """
+        self.x = x
         output = x
         for layer in self.layers:
             output = layer(output)
+        self.y = output
         if targets is not None:
+            self.targets = targets
             return self.loss(output, targets)
         return None
 
@@ -233,7 +237,7 @@ class NeuralNetwork:
         TODO: Implement backpropagation here by calling backward method of Layers class.
         Call backward methods of individual layers.
         """
-        delta = 1.0
+        delta = self.loss(self.y, self.targets)
         for layer in reversed(self.layers):
             delta = layer.backward(
                 delta, self.learning_rate, None, None, gradReqd=gradReqd

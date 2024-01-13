@@ -33,7 +33,12 @@ def normalize_data(inp):
         normalized inp: N X d 2D array
 
     """
-    raise NotImplementedError("normalize_data not implemented")
+    mean_val = np.mean(inp)
+    std_dev = np.std(inp)
+
+    normalized_data = (inp - mean_val) / std_dev
+
+    return normalized_data
 
 
 def one_hot_encoding(labels, num_classes=10):
@@ -48,6 +53,11 @@ def one_hot_encoding(labels, num_classes=10):
     returns:
         oneHot : N X num_classes 2D array
     """
+    N = len(labels)
+    labels = labels.astype(np.int32)
+    ret = np.zeros((N, num_classes), dtype=np.int32)
+    ret[:, labels] = 1
+    return ret
     raise NotImplementedError("one_hot_encoding not implemented")
 
 
@@ -170,7 +180,13 @@ def createTrainValSplit(x_train, y_train):
     TODO
     Creates the train-validation split (80-20 split for train-val). Please shuffle the data before creating the train-val split.
     """
-    raise NotImplementedError("createTrainValSplit not implemented")
+    # raise NotImplementedError("createTrainValSplit not implemented")
+    # Assuming 'data' is your dataset and 'labels' are corresponding labels/targets
+    # Specify the test_size to set the proportion of the dataset to include in the test split
+    # Random_state ensures reproducibility, use a specific number or set to None for randomness
+
+    size = int(len(x_train) * 0.8)
+    return x_train[:size], x_train[size:], y_train[:size], y_train[size:]
 
 
 def get_mnist():
@@ -273,6 +289,7 @@ def load_data(path):
         train_normalized_images, train_one_hot_labels, val_normalized_images, val_one_hot_labels,  test_normalized_images, test_one_hot_labels
 
     """
+    # TODO: cache results for performance
     if not os.path.exists(path):
         os.makedirs(path)
         print("Fetching MNIST data...")

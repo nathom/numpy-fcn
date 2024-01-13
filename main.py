@@ -1,10 +1,10 @@
 import argparse
 
 import gradient
+import util
 from constants import *
-from gradient import *
-from train import *
-from util import *
+from neuralnet import NeuralNetwork
+from train import model_train
 
 
 # TODO
@@ -38,20 +38,21 @@ def main(args):
     config = util.load_config(configYamlPath + configFile)
 
     if args.experiment == "test_gradients":
-        gradient.checkGradient(x_train, y_train, config)
+        gradient.check_gradient(x_train, y_train, config)
         return 1
 
     # Create a Neural Network object which will be our model
     model = NeuralNetwork(config)
 
     # train the model
-    model = train(model, x_train, y_train, x_valid, y_valid, config)
+    model = model_train(model, x_train, y_train, x_valid, y_valid, config)
+    print("done training")
 
     # test the model
-    test_acc, test_loss = modelTest(model, x_test, y_test)
+    # test_acc, test_loss = model_test(model, x_test, y_test)
 
     # Print test accuracy and test loss
-    print("Test Accuracy:", test_acc, " Test Loss:", test_loss)
+    # print("Test Accuracy:", test_acc, " Test Loss:", test_loss)
 
 
 if __name__ == "__main__":
