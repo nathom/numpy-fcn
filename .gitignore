@@ -162,3 +162,7 @@ cython_debug/
 # PA1 ignore files
 data/
 plots/
+
+writeup/*
+!writeup/*.tex
+!writeup/*.sty
