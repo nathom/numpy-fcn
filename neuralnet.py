@@ -45,7 +45,7 @@ class Activation:
 
         raise Exception
 
-    def backward(self, z) -> np.ndarray:
+    def backward(self, z: np.ndarray) -> np.ndarray:
         """
         Compute the backward pass.
         """
@@ -169,7 +169,7 @@ class Layer:
         return self.dw
 
 
-class Neuralnetwork:
+class NeuralNetwork:
     """
     Create a Neural Network specified by the network configuration mentioned in the config yaml file.
     """

@@ -42,7 +42,7 @@ def main(args):
         return 1
 
     # Create a Neural Network object which will be our model
-    model = Neuralnetwork(config)
+    model = NeuralNetwork(config)
 
     # train the model
     model = train(model, x_train, y_train, x_valid, y_valid, config)

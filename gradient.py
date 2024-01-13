@@ -1,8 +1,9 @@
 import numpy as np
-from neuralnet import Neuralnetwork
+
+from neuralnet import NeuralNetwork
+
 
 def check_grad(model, x_train, y_train):
-
     """
     TODO
         Checks if gradients computed numerically are within O(epsilon**2)
@@ -22,5 +23,5 @@ def checkGradient(x_train, y_train, config):
     sample_idx = np.random.randint(0, len(x_train), subsetSize)
     x_train_sample, y_train_sample = x_train[sample_idx], y_train[sample_idx]
 
-    model = Neuralnetwork(config)
+    model = NeuralNetwork(config)
     check_grad(model, x_train_sample, y_train_sample)
