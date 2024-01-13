@@ -1,5 +1,5 @@
-import copy
-from neuralnet import *
+import numpy as np
+
 
 def train(model, x_train, y_train, x_valid, y_valid, config):
     """
@@ -21,10 +21,16 @@ def train(model, x_train, y_train, x_valid, y_valid, config):
     """
 
     # Read in the esssential configs
+    batch_size = config["batch_size"]
+    for e in range(config["epochs"]):
+        for i in range(0, len(x_train), batch_size):
+            x_train_batch = x_train[i : i + batch_size]
+            grads = np.array()
 
     return model
 
-#This is the test method
+
+# This is the test method
 def modelTest(model, X_test, y_test):
     """
     TODO

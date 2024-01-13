@@ -4,6 +4,7 @@ import gradient
 from constants import *
 from gradient import *
 from train import *
+from util import *
 
 
 # TODO

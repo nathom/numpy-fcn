@@ -1,10 +1,11 @@
-import copy
-import os, gzip
-import yaml
-import numpy as np
+import os
 import pickle
+
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import yaml
+
 import constants
 
 
@@ -17,7 +18,7 @@ def load_config(path):
     returns:
         yaml - yaml object containing the config file
     """
-    return yaml.load(open(path, 'r'), Loader=yaml.SafeLoader)
+    return yaml.load(open(path, "r"), Loader=yaml.SafeLoader)
 
 
 def normalize_data(inp):
@@ -50,18 +51,20 @@ def one_hot_encoding(labels, num_classes=10):
     raise NotImplementedError("one_hot_encoding not implemented")
 
 
-def generate_minibatches(dataset, batch_size=64):
+def generate_minibatches(
+    dataset: tuple[np.ndarray, np.ndarray], batch_size=64
+) -> tuple[np.ndarray, np.ndarray]:
     """
-        Generates minibatches of the dataset
+    Generates minibatches of the dataset
 
-        args:
-            dataset : 2D Array N (examples) X d (dimensions)
-            batch_size: mini batch size. Default value=64
+    args:
+        dataset : 2D Array N (examples) X d (dimensions)
+        batch_size: mini batch size. Default value=64
 
-        yields:
-            (X,y) tuple of size=batch_size
+    yields:
+        (X,y) tuple of size=batch_size
 
-        """
+    """
 
     X, y = dataset
     l_idx, r_idx = 0, batch_size
@@ -72,7 +75,9 @@ def generate_minibatches(dataset, batch_size=64):
     yield X[l_idx:], y[l_idx:]
 
 
-def calculateCorrect(y, t):  #Feel free to use this function to return accuracy instead of number of correct predictions
+def calculateCorrect(
+    y, t
+):  # Feel free to use this function to return accuracy instead of number of correct predictions
     """
     TODO
     Calculates the number of correct predictions
@@ -87,7 +92,6 @@ def calculateCorrect(y, t):  #Feel free to use this function to return accuracy 
     raise NotImplementedError("calculateCorrect not implemented")
 
 
-
 def append_bias(X):
     """
     TODO
@@ -100,8 +104,9 @@ def append_bias(X):
     raise NotImplementedError("append_bias not implemented")
 
 
-def plots(trainEpochLoss, trainEpochAccuracy, valEpochLoss, valEpochAccuracy, earlyStop):
-
+def plots(
+    trainEpochLoss, trainEpochAccuracy, valEpochLoss, valEpochAccuracy, earlyStop
+):
     """
     Helper function for creating the plots
     """
@@ -109,41 +114,58 @@ def plots(trainEpochLoss, trainEpochAccuracy, valEpochLoss, valEpochAccuracy, ea
         os.makedirs(constants.saveLocation)
 
     fig1, ax1 = plt.subplots(figsize=((24, 12)))
-    epochs = np.arange(1,len(trainEpochLoss)+1,1)
-    ax1.plot(epochs, trainEpochLoss, 'r', label="Training Loss")
-    ax1.plot(epochs, valEpochLoss, 'g', label="Validation Loss")
-    plt.scatter(epochs[earlyStop],valEpochLoss[earlyStop],marker='x', c='g',s=400,label='Early Stop Epoch')
-    plt.xticks(ticks=np.arange(min(epochs),max(epochs)+1,10), fontsize=35 )
+    epochs = np.arange(1, len(trainEpochLoss) + 1, 1)
+    ax1.plot(epochs, trainEpochLoss, "r", label="Training Loss")
+    ax1.plot(epochs, valEpochLoss, "g", label="Validation Loss")
+    plt.scatter(
+        epochs[earlyStop],
+        valEpochLoss[earlyStop],
+        marker="x",
+        c="g",
+        s=400,
+        label="Early Stop Epoch",
+    )
+    plt.xticks(ticks=np.arange(min(epochs), max(epochs) + 1, 10), fontsize=35)
     plt.yticks(fontsize=35)
-    ax1.set_title('Loss Plots', fontsize=35.0)
-    ax1.set_xlabel('Epochs', fontsize=35.0)
-    ax1.set_ylabel('Cross Entropy Loss', fontsize=35.0)
+    ax1.set_title("Loss Plots", fontsize=35.0)
+    ax1.set_xlabel("Epochs", fontsize=35.0)
+    ax1.set_ylabel("Cross Entropy Loss", fontsize=35.0)
     ax1.legend(loc="upper right", fontsize=35.0)
-    plt.savefig(constants.saveLocation+"loss.eps")
+    plt.savefig(constants.saveLocation + "loss.eps")
     plt.show()
 
     fig2, ax2 = plt.subplots(figsize=((24, 12)))
-    ax2.plot(epochs, trainEpochAccuracy, 'r', label="Training Accuracy")
-    ax2.plot(epochs, valEpochAccuracy, 'g', label="Validation Accuracy")
-    plt.scatter(epochs[earlyStop], valEpochAccuracy[earlyStop], marker='x', c='g', s=400, label='Early Stop Epoch')
-    plt.xticks(ticks=np.arange(min(epochs),max(epochs)+1,10), fontsize=35)
+    ax2.plot(epochs, trainEpochAccuracy, "r", label="Training Accuracy")
+    ax2.plot(epochs, valEpochAccuracy, "g", label="Validation Accuracy")
+    plt.scatter(
+        epochs[earlyStop],
+        valEpochAccuracy[earlyStop],
+        marker="x",
+        c="g",
+        s=400,
+        label="Early Stop Epoch",
+    )
+    plt.xticks(ticks=np.arange(min(epochs), max(epochs) + 1, 10), fontsize=35)
     plt.yticks(fontsize=35)
-    ax2.set_title('Accuracy Plots', fontsize=35.0)
-    ax2.set_xlabel('Epochs', fontsize=35.0)
-    ax2.set_ylabel('Accuracy', fontsize=35.0)
+    ax2.set_title("Accuracy Plots", fontsize=35.0)
+    ax2.set_xlabel("Epochs", fontsize=35.0)
+    ax2.set_ylabel("Accuracy", fontsize=35.0)
     ax2.legend(loc="lower right", fontsize=35.0)
-    plt.savefig(constants.saveLocation+"accuarcy.eps")
+    plt.savefig(constants.saveLocation + "accuarcy.eps")
     plt.show()
 
-    #Saving the losses and accuracies for further offline use
-    pd.DataFrame(trainEpochLoss).to_csv(constants.saveLocation+"trainEpochLoss.csv")
-    pd.DataFrame(valEpochLoss).to_csv(constants.saveLocation+"valEpochLoss.csv")
-    pd.DataFrame(trainEpochAccuracy).to_csv(constants.saveLocation+"trainEpochAccuracy.csv")
-    pd.DataFrame(valEpochAccuracy).to_csv(constants.saveLocation+"valEpochAccuracy.csv")
+    # Saving the losses and accuracies for further offline use
+    pd.DataFrame(trainEpochLoss).to_csv(constants.saveLocation + "trainEpochLoss.csv")
+    pd.DataFrame(valEpochLoss).to_csv(constants.saveLocation + "valEpochLoss.csv")
+    pd.DataFrame(trainEpochAccuracy).to_csv(
+        constants.saveLocation + "trainEpochAccuracy.csv"
+    )
+    pd.DataFrame(valEpochAccuracy).to_csv(
+        constants.saveLocation + "valEpochAccuracy.csv"
+    )
 
 
-def createTrainValSplit(x_train,y_train):
-
+def createTrainValSplit(x_train, y_train):
     """
     TODO
     Creates the train-validation split (80-20 split for train-val). Please shuffle the data before creating the train-val split.
@@ -159,11 +181,11 @@ def get_mnist():
     # https://cntk.ai/pythondocs/CNTK_103A_MNIST_DataLoader.html
 
     import gzip
-    import numpy as np
     import os
     import struct
-
     from urllib.request import urlretrieve
+
+    import numpy as np
 
     def load_data(src, num_samples):
         gzfname, h = urlretrieve(src, "./delete.me")
@@ -182,13 +204,9 @@ def get_mnist():
                 crow = struct.unpack(">I", gz.read(4))[0]
                 ccol = struct.unpack(">I", gz.read(4))[0]
                 if crow != 28 or ccol != 28:
-                    raise Exception(
-                        "Invalid file: expected 28 rows/cols per image."
-                    )
+                    raise Exception("Invalid file: expected 28 rows/cols per image.")
                 # Read data.
-                res = np.frombuffer(
-                    gz.read(num_samples * crow * ccol), dtype=np.uint8
-                )
+                res = np.frombuffer(gz.read(num_samples * crow * ccol), dtype=np.uint8)
         finally:
             os.remove(gzfname)
         return res.reshape((num_samples, crow, ccol)) / 256
@@ -222,21 +240,25 @@ def get_mnist():
     # simple downloader. (e.g. urlretrieve and wget fail, while curl work)
     # Since not everyone has linux, use a mirror from uni server.
     #     server = 'http://yann.lecun.com/exdb/mnist'
-    server = 'https://raw.githubusercontent.com/fgnt/mnist/master'
+    server = "https://raw.githubusercontent.com/fgnt/mnist/master"
 
     # URLs for the train image and label data
-    url_train_image = f'{server}/train-images-idx3-ubyte.gz'
-    url_train_labels = f'{server}/train-labels-idx1-ubyte.gz'
+    url_train_image = f"{server}/train-images-idx3-ubyte.gz"
+    url_train_labels = f"{server}/train-labels-idx1-ubyte.gz"
     num_train_samples = 60000
 
-    train_features, train_labels = try_download(url_train_image, url_train_labels, num_train_samples)
+    train_features, train_labels = try_download(
+        url_train_image, url_train_labels, num_train_samples
+    )
 
     # URLs for the test image and label data
-    url_test_image = f'{server}/t10k-images-idx3-ubyte.gz'
-    url_test_labels = f'{server}/t10k-labels-idx1-ubyte.gz'
+    url_test_image = f"{server}/t10k-images-idx3-ubyte.gz"
+    url_test_labels = f"{server}/t10k-labels-idx1-ubyte.gz"
     num_test_samples = 10000
 
-    test_features, test_labels = try_download(url_test_image, url_test_labels, num_test_samples)
+    test_features, test_labels = try_download(
+        url_test_image, url_test_labels, num_test_samples
+    )
 
     return train_features, train_labels, test_features, test_labels
 
@@ -253,25 +275,33 @@ def load_data(path):
     """
     if not os.path.exists(path):
         os.makedirs(path)
-        print('Fetching MNIST data...')
+        print("Fetching MNIST data...")
         train_features, train_labels, test_features, test_labels = get_mnist()
         # Save data using pickle
         with open(os.path.join(path, "mnist.pkl"), "wb") as f:
             pickle.dump([train_features, train_labels, test_features, test_labels], f)
-        print(f'Done. All data can be found in {path}')
+        print(f"Done. All data can be found in {path}")
 
     # Load data from pickle file
-    print(f'Loading MNIST data from {path}mnist.pkl')
-    with open(f"{path}mnist.pkl", 'rb') as f:
+    print(f"Loading MNIST data from {path}mnist.pkl")
+    with open(f"{path}mnist.pkl", "rb") as f:
         train_images, train_labels, test_images, test_labels = pickle.load(f)
-    print('Done.\n')
+    print("Done.\n")
 
     # Reformat the images and labels
-    train_images, test_images = train_images.reshape(train_images.shape[0], -1), test_images.reshape(test_images.shape[0], -1)
-    train_labels, test_labels = np.expand_dims(train_labels, axis=1), np.expand_dims(test_labels, axis=1)
+    train_images, test_images = (
+        train_images.reshape(train_images.shape[0], -1),
+        test_images.reshape(test_images.shape[0], -1),
+    )
+    train_labels, test_labels = (
+        np.expand_dims(train_labels, axis=1),
+        np.expand_dims(test_labels, axis=1),
+    )
 
     # Create 80-20 train-validation split
-    train_images, train_labels, val_images, val_labels = createTrainValSplit(train_images, train_labels)
+    train_images, train_labels, val_images, val_labels = createTrainValSplit(
+        train_images, train_labels
+    )
 
     # Preprocess data
     train_normalized_images = normalize_data(train_images)
@@ -283,4 +313,11 @@ def load_data(path):
     test_normalized_images = normalize_data(test_images)
     test_one_hot_labels = one_hot_encoding(test_labels, num_classes=10)  # (n, 10)
 
-    return train_normalized_images, train_one_hot_labels, val_normalized_images, val_one_hot_labels, test_normalized_images, test_one_hot_labels
+    return (
+        train_normalized_images,
+        train_one_hot_labels,
+        val_normalized_images,
+        val_one_hot_labels,
+        test_normalized_images,
+        test_one_hot_labels,
+    )
