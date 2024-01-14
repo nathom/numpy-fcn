@@ -289,46 +289,63 @@ def load_data(path):
         train_normalized_images, train_one_hot_labels, val_normalized_images, val_one_hot_labels,  test_normalized_images, test_one_hot_labels
 
     """
-    # TODO: cache results for performance
+
+    # Make data directory
     if not os.path.exists(path):
         os.makedirs(path)
+
+    # Check if raw data is cached, otherwise fetch and cache
+    if not os.path.exists(os.path.join(path, "raw.pkl")):
         print("Fetching MNIST data...")
         train_features, train_labels, test_features, test_labels = get_mnist()
         # Save data using pickle
-        with open(os.path.join(path, "mnist.pkl"), "wb") as f:
+        with open(os.path.join(path, "raw.pkl"), "wb") as f:
             pickle.dump([train_features, train_labels, test_features, test_labels], f)
-        print(f"Done. All data can be found in {path}")
+        print(f"Done. All raw data can be found in {path}")
 
-    # Load data from pickle file
-    print(f"Loading MNIST data from {path}mnist.pkl")
-    with open(f"{path}mnist.pkl", "rb") as f:
+    # Load raw data from pickle file
+    print(f"Loading MNIST data from {path}raw.pkl")
+    with open(f"{path}raw.pkl", "rb") as f:
         train_images, train_labels, test_images, test_labels = pickle.load(f)
     print("Done.\n")
 
-    # Reformat the images and labels
-    train_images, test_images = (
-        train_images.reshape(train_images.shape[0], -1),
-        test_images.reshape(test_images.shape[0], -1),
-    )
-    train_labels, test_labels = (
-        np.expand_dims(train_labels, axis=1),
-        np.expand_dims(test_labels, axis=1),
-    )
+    # Check if processed data is cached, otherwise process and cache
+    if not os.path.exists(os.path.join(path, "processed.pkl")):
+        # Reformat the images and labels
+        train_images, test_images = (
+            train_images.reshape(train_images.shape[0], -1),
+            test_images.reshape(test_images.shape[0], -1),
+        )
+        train_labels, test_labels = (
+            np.expand_dims(train_labels, axis=1),
+            np.expand_dims(test_labels, axis=1),
+        )
 
-    # Create 80-20 train-validation split
-    train_images, train_labels, val_images, val_labels = train_validation_split(
-        train_images, train_labels
-    )
+        # Create 80-20 train-validation split
+        train_images, train_labels, val_images, val_labels = train_validation_split(
+            train_images, train_labels
+        )
 
-    # Preprocess data
-    train_normalized_images = normalize_data(train_images)  # very expensive
-    train_one_hot_labels = one_hot_encoding(train_labels, num_classes=10)  # (n, 10)
+        # Preprocess data
+        train_normalized_images = normalize_data(train_images)  # very expensive
+        train_one_hot_labels = one_hot_encoding(train_labels, num_classes=10)  # (n, 10)
 
-    val_normalized_images = normalize_data(val_images)
-    val_one_hot_labels = one_hot_encoding(val_labels, num_classes=10)  # (n, 10)
+        val_normalized_images = normalize_data(val_images)
+        val_one_hot_labels = one_hot_encoding(val_labels, num_classes=10)  # (n, 10)
 
-    test_normalized_images = normalize_data(test_images)
-    test_one_hot_labels = one_hot_encoding(test_labels, num_classes=10)  # (n, 10)
+        test_normalized_images = normalize_data(test_images)
+        test_one_hot_labels = one_hot_encoding(test_labels, num_classes=10)  # (n, 10)
+
+        with open(os.path.join(path, "processed.pkl"), "wb") as g:
+            pickle.dump([train_normalized_images, train_one_hot_labels,
+                         val_normalized_images, val_one_hot_labels,
+                         test_normalized_images, test_one_hot_labels ], g)
+        print(f"Done. All processed data can be found in {path}")
+
+    # Load processed data from pickle file
+    with open(f"{path}processed.pkl", "rb") as f:
+        train_normalized_images, train_one_hot_labels, val_normalized_images, val_one_hot_labels, test_normalized_images, test_one_hot_labels = pickle.load(f)
+    print("Done.\n")
 
     return (
         train_normalized_images,
