@@ -56,9 +56,10 @@ def one_hot_encoding(labels, num_classes=10):
     N = len(labels)
     labels = labels.astype(np.int32)
     ret = np.zeros((N, num_classes), dtype=np.int32)
-    ret[:, labels] = 1
+    print(f"{labels.shape=}, {ret.shape=}, {N=}")
+    # wow im so clever
+    ret[range(N), labels] = 1.0
     return ret
-    raise NotImplementedError("one_hot_encoding not implemented")
 
 
 def generate_minibatches(
@@ -120,8 +121,8 @@ def plots(
     """
     Helper function for creating the plots
     """
-    if not os.path.exists(constants.saveLocation):
-        os.makedirs(constants.saveLocation)
+    if not os.path.exists(constants.save_location):
+        os.makedirs(constants.save_location)
 
     fig1, ax1 = plt.subplots(figsize=((24, 12)))
     epochs = np.arange(1, len(trainEpochLoss) + 1, 1)
@@ -141,7 +142,7 @@ def plots(
     ax1.set_xlabel("Epochs", fontsize=35.0)
     ax1.set_ylabel("Cross Entropy Loss", fontsize=35.0)
     ax1.legend(loc="upper right", fontsize=35.0)
-    plt.savefig(constants.saveLocation + "loss.eps")
+    plt.savefig(constants.save_location + "loss.eps")
     plt.show()
 
     fig2, ax2 = plt.subplots(figsize=((24, 12)))
@@ -161,23 +162,22 @@ def plots(
     ax2.set_xlabel("Epochs", fontsize=35.0)
     ax2.set_ylabel("Accuracy", fontsize=35.0)
     ax2.legend(loc="lower right", fontsize=35.0)
-    plt.savefig(constants.saveLocation + "accuarcy.eps")
+    plt.savefig(constants.save_location + "accuarcy.eps")
     plt.show()
 
     # Saving the losses and accuracies for further offline use
-    pd.DataFrame(trainEpochLoss).to_csv(constants.saveLocation + "trainEpochLoss.csv")
-    pd.DataFrame(valEpochLoss).to_csv(constants.saveLocation + "valEpochLoss.csv")
+    pd.DataFrame(trainEpochLoss).to_csv(constants.save_location + "trainEpochLoss.csv")
+    pd.DataFrame(valEpochLoss).to_csv(constants.save_location + "valEpochLoss.csv")
     pd.DataFrame(trainEpochAccuracy).to_csv(
-        constants.saveLocation + "trainEpochAccuracy.csv"
+        constants.save_location + "trainEpochAccuracy.csv"
     )
     pd.DataFrame(valEpochAccuracy).to_csv(
-        constants.saveLocation + "valEpochAccuracy.csv"
+        constants.save_location + "valEpochAccuracy.csv"
     )
 
 
-def createTrainValSplit(x_train, y_train):
+def train_validation_split(x_train, y_train, random_seed=42):
     """
-    TODO
     Creates the train-validation split (80-20 split for train-val). Please shuffle the data before creating the train-val split.
     """
     # raise NotImplementedError("createTrainValSplit not implemented")
@@ -186,7 +186,7 @@ def createTrainValSplit(x_train, y_train):
     # Random_state ensures reproducibility, use a specific number or set to None for randomness
 
     size = int(len(x_train) * 0.8)
-    return x_train[:size], x_train[size:], y_train[:size], y_train[size:]
+    return x_train[:size], y_train[:size], x_train[size:], y_train[size:]
 
 
 def get_mnist():
@@ -316,12 +316,12 @@ def load_data(path):
     )
 
     # Create 80-20 train-validation split
-    train_images, train_labels, val_images, val_labels = createTrainValSplit(
+    train_images, train_labels, val_images, val_labels = train_validation_split(
         train_images, train_labels
     )
 
     # Preprocess data
-    train_normalized_images = normalize_data(train_images)
+    train_normalized_images = normalize_data(train_images)  # very expensive
     train_one_hot_labels = one_hot_encoding(train_labels, num_classes=10)  # (n, 10)
 
     val_normalized_images = normalize_data(val_images)

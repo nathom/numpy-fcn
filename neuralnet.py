@@ -83,19 +83,19 @@ class Activation:
 
     def grad_sigmoid(self, x):
         """
-        TODO: Compute the gradient for sigmoid here.
+        Compute the gradient for sigmoid here.
         """
         return self.sigmoid(x) * (1.0 - self.sigmoid(x))
 
     def grad_tanh(self, x):
         """
-        TODO: Compute the gradient for tanh here.
+        Compute the gradient for tanh here.
         """
         return 1 - self.tanh(x) ** 2
 
     def grad_ReLU(self, x):
         """
-        TODO: Compute the gradient for ReLU here.
+        Compute the gradient for ReLU here.
         """
         return np.heaviside(x, 0)
 

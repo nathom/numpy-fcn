@@ -32,9 +32,12 @@ def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config
         for i in trange(0, len(x_train), batch_size):
             x_train_batch = x_train[i : i + batch_size]
             y_train_batch = y_train[i : i + batch_size]
-            loss = model(x_train_batch, y_train_batch)
-            losses.append(loss)
-            assert loss is not None
+
+            for x, y in zip(x_train_batch, y_train_batch):
+                loss = model.forward(x, y)
+                assert loss is not None
+                losses.append(loss)
+
             model.backward()
 
     with open("loss.json", "w") as f:
@@ -44,7 +47,7 @@ def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config
 
 
 # This is the test method
-def model_test(model, X_test, y_test):
+def model_test(model: NeuralNetwork, X_test, y_test):
     """
     TODO
     Calculates and returns the accuracy & loss on the test set.
@@ -58,4 +61,12 @@ def model_test(model, X_test, y_test):
         test accuracy
         test loss
     """
-    raise NotImplementedError("Model test function not implemented")
+
+    losses = []
+    correct = 0
+    for x, y in zip(X_test, y_test):
+        loss = model.forward(x, y)
+        if model.y == y:
+            correct += 1
+        losses.append(loss)
+    return correct / len(y_test), losses

@@ -1,41 +1,46 @@
 import argparse
+import os
 
 import gradient
 import util
-from constants import *
+from constants import (
+    config_dir,
+    dataset_dir,
+)
 from neuralnet import NeuralNetwork
-from train import model_train
+from train import model_test, model_train
 
 
 # TODO
 def main(args):
     # Read the required config
     # Create different config files for different experiments
-    configFile = None  # Will contain the name of the config file to be loaded
     if args.experiment == "test_softmax":  # Rubric #4: Softmax Regression
-        configFile = "config_4.yaml"
+        config_fn = "config_4.yaml"
     elif (
         args.experiment == "test_gradients"
     ):  # Rubric #5: Numerical Approximation of Gradients
-        configFile = "config_5.yaml"
+        config_fn = "config_5.yaml"
     elif args.experiment == "test_momentum":  # Rubric #6: Momentum Experiments
-        configFile = "config_6.yaml"
+        config_fn = "config_6.yaml"
     elif (
         args.experiment == "test_regularization"
     ):  # Rubric #7: Regularization Experiments
-        configFile = (
-            None  # Create a config file and change None to the config file name
-        )
+        raise NotImplementedError
     elif args.experiment == "test_activation":  # Rubric #8: Activation Experiments
-        configFile = (
-            None  # Create a config file and change None to the config file name
-        )
+        raise NotImplementedError
+    else:
+        raise NotImplementedError
 
     # Load the data
-    x_train, y_train, x_valid, y_valid, x_test, y_test = util.load_data(path=datasetDir)
+    x_train, y_train, x_valid, y_valid, x_test, y_test = util.load_data(
+        path=dataset_dir
+    )
 
     # Load the configuration from the corresponding yaml file. Specify the file path and name
-    config = util.load_config(configYamlPath + configFile)
+    assert config_fn is not None
+    assert config_dir is not None
+    config = util.load_config(os.path.join(config_dir, config_fn))
 
     if args.experiment == "test_gradients":
         gradient.check_gradient(x_train, y_train, config)
@@ -49,7 +54,7 @@ def main(args):
     print("done training")
 
     # test the model
-    # test_acc, test_loss = model_test(model, x_test, y_test)
+    test_acc, test_loss = model_test(model, x_test, y_test)
 
     # Print test accuracy and test loss
     # print("Test Accuracy:", test_acc, " Test Loss:", test_loss)
