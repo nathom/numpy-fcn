@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import yaml
+import random
 
 import constants
 
@@ -185,8 +186,13 @@ def train_validation_split(x_train, y_train, random_seed=42):
     # Specify the test_size to set the proportion of the dataset to include in the test split
     # Random_state ensures reproducibility, use a specific number or set to None for randomness
 
+    random.seed(random_seed)
+
+    data = list(zip(x_train, y_train))
+    random.shuffle(data)
     size = int(len(x_train) * 0.8)
-    return x_train[:size], y_train[:size], x_train[size:], y_train[size:]
+
+    return zip(*data[:size]), zip(*data[size:])
 
 
 def get_mnist():
