@@ -166,3 +166,5 @@ plots/
 writeup/*
 !writeup/*.tex
 !writeup/*.sty
+!writeup/sections/
+!writeup/sections/*.tex
