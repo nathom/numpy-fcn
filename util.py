@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import yaml
-import random
 
 import constants
 
@@ -177,22 +176,29 @@ def plots(
     )
 
 
-def train_validation_split(x_train, y_train, random_seed=42):
+def train_validation_split(
+    x_train, y_train, random_seed=42
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
-    Creates the train-validation split (80-20 split for train-val). Please shuffle the data before creating the train-val split.
+    :return: x_train, y_train, x_validate, y_validate
     """
     # raise NotImplementedError("createTrainValSplit not implemented")
     # Assuming 'data' is your dataset and 'labels' are corresponding labels/targets
     # Specify the test_size to set the proportion of the dataset to include in the test split
     # Random_state ensures reproducibility, use a specific number or set to None for randomness
 
-    random.seed(random_seed)
-
-    data = list(zip(x_train, y_train))
-    random.shuffle(data)
-    size = int(len(x_train) * 0.8)
-
-    return zip(*data[:size]), zip(*data[size:])
+    np.random.seed(random_seed)
+    N, w = x_train.shape
+    train_size = int(N * 0.8)
+    data = np.column_stack((x_train, y_train))
+    assert data.shape == (N, w + 1)
+    np.random.shuffle(data)
+    return (
+        data[:train_size, :w],
+        data[:train_size, w:],
+        data[train_size:, :w],
+        data[train_size:, w:],
+    )
 
 
 def get_mnist():
@@ -343,14 +349,29 @@ def load_data(path):
         test_one_hot_labels = one_hot_encoding(test_labels, num_classes=10)  # (n, 10)
 
         with open(os.path.join(path, "processed.pkl"), "wb") as g:
-            pickle.dump([train_normalized_images, train_one_hot_labels,
-                         val_normalized_images, val_one_hot_labels,
-                         test_normalized_images, test_one_hot_labels ], g)
+            pickle.dump(
+                [
+                    train_normalized_images,
+                    train_one_hot_labels,
+                    val_normalized_images,
+                    val_one_hot_labels,
+                    test_normalized_images,
+                    test_one_hot_labels,
+                ],
+                g,
+            )
         print(f"Done. All processed data can be found in {path}")
 
     # Load processed data from pickle file
     with open(f"{path}processed.pkl", "rb") as f:
-        train_normalized_images, train_one_hot_labels, val_normalized_images, val_one_hot_labels, test_normalized_images, test_one_hot_labels = pickle.load(f)
+        (
+            train_normalized_images,
+            train_one_hot_labels,
+            val_normalized_images,
+            val_one_hot_labels,
+            test_normalized_images,
+            test_one_hot_labels,
+        ) = pickle.load(f)
     print("Done.\n")
 
     return (
