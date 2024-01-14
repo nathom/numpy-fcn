@@ -8,7 +8,7 @@ from constants import (
     dataset_dir,
 )
 from neuralnet import NeuralNetwork
-from train import model_test, model_train
+from train import model_train
 
 
 # TODO
@@ -50,11 +50,15 @@ def main(args):
     model = NeuralNetwork(config)
 
     # train the model
-    model = model_train(model, x_train, y_train, x_valid, y_valid, config)
-    print("done training")
+    model, tl, ta, vl, va = model_train(
+        model, x_train, y_train, x_valid, y_valid, config
+    )
+
+    if args.plot:
+        util.plot(tl, ta, vl, va, None)
 
     # test the model
-    test_acc, test_loss = model_test(model, x_test, y_test)
+    # test_acc, test_loss = model_test(model, x_test, y_test)
 
     # Print test accuracy and test loss
     # print("Test Accuracy:", test_acc, " Test Loss:", test_loss)
@@ -68,6 +72,11 @@ if __name__ == "__main__":
         type=str,
         default="test_momentum",
         help="Specify the experiment that you want to run",
+    )
+    parser.add_argument(
+        "--plot",
+        action="store_true",
+        help="Plot the results",
     )
     args = parser.parse_args()
     main(args)

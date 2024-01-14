@@ -112,12 +112,10 @@ def append_bias(X):
     returns:
         X_bias (N X (d+1)) 2D Array
     """
-    raise NotImplementedError("append_bias not implemented")
+    return np.column_stack((X, np.ones((X.shape[0], 1))))
 
 
-def plots(
-    trainEpochLoss, trainEpochAccuracy, valEpochLoss, valEpochAccuracy, earlyStop
-):
+def plot(trainEpochLoss, trainEpochAccuracy, valEpochLoss, valEpochAccuracy, earlyStop):
     """
     Helper function for creating the plots
     """
@@ -128,14 +126,15 @@ def plots(
     epochs = np.arange(1, len(trainEpochLoss) + 1, 1)
     ax1.plot(epochs, trainEpochLoss, "r", label="Training Loss")
     ax1.plot(epochs, valEpochLoss, "g", label="Validation Loss")
-    plt.scatter(
-        epochs[earlyStop],
-        valEpochLoss[earlyStop],
-        marker="x",
-        c="g",
-        s=400,
-        label="Early Stop Epoch",
-    )
+    if earlyStop is not None:
+        plt.scatter(
+            epochs[earlyStop],
+            valEpochLoss[earlyStop],
+            marker="x",
+            c="g",
+            s=400,
+            label="Early Stop Epoch",
+        )
     plt.xticks(ticks=np.arange(min(epochs), max(epochs) + 1, 10), fontsize=35)
     plt.yticks(fontsize=35)
     ax1.set_title("Loss Plots", fontsize=35.0)
@@ -148,14 +147,15 @@ def plots(
     fig2, ax2 = plt.subplots(figsize=((24, 12)))
     ax2.plot(epochs, trainEpochAccuracy, "r", label="Training Accuracy")
     ax2.plot(epochs, valEpochAccuracy, "g", label="Validation Accuracy")
-    plt.scatter(
-        epochs[earlyStop],
-        valEpochAccuracy[earlyStop],
-        marker="x",
-        c="g",
-        s=400,
-        label="Early Stop Epoch",
-    )
+    if earlyStop is not None:
+        plt.scatter(
+            epochs[earlyStop],
+            valEpochAccuracy[earlyStop],
+            marker="x",
+            c="g",
+            s=400,
+            label="Early Stop Epoch",
+        )
     plt.xticks(ticks=np.arange(min(epochs), max(epochs) + 1, 10), fontsize=35)
     plt.yticks(fontsize=35)
     ax2.set_title("Accuracy Plots", fontsize=35.0)

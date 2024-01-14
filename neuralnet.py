@@ -139,8 +139,9 @@ class Layer:
         """
         Compute the forward pass (activation of the weighted input) through the layer here and return it.
         """
-        self.x = x
-        self.a = self.w @ x
+
+        self.x = x  # (785,)
+        self.a = x @ self.w  # (785,) * (785,10) -> (10,)
         self.z = self.activation(self.a)
         return self.z
 
@@ -150,7 +151,7 @@ class Layer:
         learning_rate: float,
         momentum_gamma,
         regularization,
-        gradReqd: bool = True,
+        update_weights: bool,
     ):
         """
         TODO: Write the code for backward pass. This takes in gradient from its next layer as input and
@@ -164,8 +165,8 @@ class Layer:
         When implementing softmax regression part, just focus on implementing the single-layer case first.
         """
         assert self.a is not None
-        self.dw = deltaCur * self.activation.backward(self.a)
-        if gradReqd:
+        self.dw += deltaCur * self.activation.backward(self.a)
+        if update_weights:
             self.w -= learning_rate * self.dw
         return self.dw
 
@@ -216,7 +217,6 @@ class NeuralNetwork:
         TODO: Compute forward pass through all the layers in the network and return the loss.
         If targets are provided, return loss and accuracy/number of correct predictions as well.
         """
-        self.x = x
         output = x
         for layer in self.layers:
             output = layer(output)
@@ -226,13 +226,13 @@ class NeuralNetwork:
             return self.loss(output, targets)
         return None
 
-    def loss(self, logits, targets):
+    def loss(self, outputs, targets):
         """
         Compute the categorical cross-entropy loss and return it.
         """
-        return -np.sum(logits * np.log(targets))
+        return -np.sum(targets @ np.log(outputs))
 
-    def backward(self, gradReqd=True):
+    def backward(self, update_weights: bool):
         """
         TODO: Implement backpropagation here by calling backward method of Layers class.
         Call backward methods of individual layers.
@@ -240,5 +240,10 @@ class NeuralNetwork:
         delta = self.loss(self.y, self.targets)
         for layer in reversed(self.layers):
             delta = layer.backward(
-                delta, self.learning_rate, None, None, gradReqd=gradReqd
+                delta, self.learning_rate, None, None, update_weights=update_weights
             )
+
+    def new_batch(self):
+        """Set the accumulated gradient on all layers to 0."""
+        for layer in self.layers:
+            layer.dw = 0.0
