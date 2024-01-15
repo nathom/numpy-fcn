@@ -7,7 +7,6 @@ class Activation:
     """
     The class implements different types of activation functions for
     your neural network layers.
-
     """
 
     def __init__(self, activation_type="sigmoid"):
@@ -128,6 +127,7 @@ class Layer:
         self.activation: Activation = activation
 
         self.dw: np.ndarray = np.zeros_like(self.w)
+        self.velocity: np.ndarray = np.zeros_like(self.w)
 
     def __call__(self, x):
         """
@@ -149,42 +149,34 @@ class Layer:
         self,
         next_delta: np.ndarray,  # (N,)
         learning_rate: float,
-        momentum_gamma,
-        regularization,
+        momentum_gamma: float,
+        regularization: float,
         update_weights: bool,
     ) -> np.ndarray:
-        """
-        TODO: Write the code for backward pass. This takes in gradient from its next layer as input and
-        computes gradient for its weights and the delta to pass to its previous layers. gradReqd is used to specify whether to update the weights i.e. whether self.w should
-        be updated after calculating self.dw
-        The delta expression for any layer consists of delta and weights from the next layer and derivative of the activation function
-        of weighted inputs i.e. g'(a) of that layer. Hence deltaCur (the input parameter) will have to be multiplied with the derivative of the activation function of the weighted
-        input of the current layer to actually get the delta for the current layer. Remember, this is just one way of interpreting it and you are free to interpret it any other way.
-        Feel free to change the function signature if you think of an alternative way to implement the delta calculation or the backward pass
-
-        When implementing softmax regression part, just focus on implementing the single-layer case first.
-        """
         assert self.a is not None
         assert self.x is not None
 
         if self.activation.activation_type == "output":
-            self.dw += self.x.reshape((-1, 1)) @ next_delta.reshape((1, -1))
-            weighted_delta = self.w[:-1, :] @ next_delta
-            if update_weights:
-                self.w += learning_rate * self.dw
-            # print(f"{w_delta.shape = }, {self.activation.activation_type}")
-            return weighted_delta
+            # output delta passed in by caller
+            # see NeuralNetwork.backward()
+            this_delta = next_delta
+        else:
+            this_delta = self.activation.backward(self.a) * next_delta
 
-        # print(f"{self.w.shape=}, {next_delta.shape}")
-        weighted_delta = self.w @ next_delta
-        assert weighted_delta.shape == (self.w.shape[0],)
-        this_delta = self.activation.backward(self.a) * next_delta
-        weighted_deltas = self.w[:-1, :] @ this_delta
-        self.dw += self.x.reshape((-1, 1)) @ this_delta.reshape((1, -1))
+        # Accumulate gradient in mini batch
+        gradient = self.x.reshape((-1, 1)) @ this_delta.reshape((1, -1))
+        if momentum_gamma > 0.0:
+            self.dw *= momentum_gamma
+        self.dw += learning_rate * gradient
+
         if update_weights:
-            self.w += learning_rate * self.dw
+            # update weights
+            self.w += self.dw
+            # reset gradient for next backprop iteration
+            self.dw = np.zeros_like(self.w)
 
-        return weighted_deltas
+        # Don't propagate the bias weight
+        return self.w[:-1, :] @ this_delta
 
 
 class NeuralNetwork:
@@ -247,12 +239,15 @@ class NeuralNetwork:
         """
         Compute the categorical cross-entropy loss and return it.
         """
-        return -np.sum(targets @ np.log(outputs))
+        epsilon = 1e-15
+        # avoid log(0.0)
+        outputs = np.clip(outputs, epsilon, 1 - epsilon)
+        return -np.sum(targets * np.log(outputs))
 
     def output_loss(self, outputs, targets):
         return targets - outputs
 
-    def backward(self, update_weights: bool):
+    def backward(self, update_weights: bool, gamma: float):
         """
         TODO: Implement backpropagation here by calling backward method of Layers class.
         Call backward methods of individual layers.
@@ -260,10 +255,10 @@ class NeuralNetwork:
         delta = self.output_loss(self.y, self.targets)  # (10,)
         for layer in reversed(self.layers):
             delta = layer.backward(
-                delta, self.learning_rate, None, None, update_weights=update_weights
+                delta, self.learning_rate, gamma, None, update_weights=update_weights
             )
 
     def new_batch(self):
         """Set the accumulated gradient on all layers to 0."""
         for layer in self.layers:
-            layer.dw = 0.0
+            layer.dw = np.zeros_like(layer.w)

@@ -1,1 +1,14 @@
 \section{Momentum Experiments}
+
+
+We now consider our model's performance after adding momentum to the mini batch SGD
+procedure. We modify the gradient sum in the original algorithm to adjust the degree
+to which previous values of the gradient have on the current iteration's gradient.
+This quantity is represented by the velocity $v$, which is updated for each sample in
+the mini batch according to
+
+\begin{align*}
+	v \gets \gamma v + \alpha (x_j \cdot \delta _j)
+\end{align*}
+
+where $x_j \cdot \delta_j$ is a $(i, 1) \times (1, j)$ matrix multiplication.

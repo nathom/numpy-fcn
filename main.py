@@ -67,22 +67,30 @@ def main(args):
         with open(path, "rb") as f:
             model, tl, ta, vl, va = pickle.load(f)
     else:
-        path = os.path.join(models_dir, args.save + ".pkl")
-        if os.path.exists(path):
-            print(f"WARNING: {path} already exists. Overwriting.")
+        if args.save:
+            path = os.path.join(models_dir, args.save + ".pkl")
+            if os.path.exists(path):
+                print(f"WARNING: {path} already exists. Overwriting.")
+        else:
+            path = None
 
         model, tl, ta, vl, va = model_train(
             model, x_train, y_train, x_valid, y_valid, config
         )
 
-        # Save cached model
-        with open(path, "wb") as file:
-            pickle.dump([model, tl, ta, vl, va], file)
-            print(f"Trained model saved at {path}")
+        if args.save:
+            assert path is not None
+            # Save cached model
+            with open(path, "wb") as file:
+                pickle.dump([model, tl, ta, vl, va], file)
+                print(f"Trained model saved at {path}")
+
+    # Model is loaded
 
     util.save_loss_accuracy(tl, ta, vl, va)
 
     if args.plot:
+        # util.plot(tl, ta, vl, va, len(tl) - 1)
         util.plot(tl, ta, vl, va, None)
 
     # test the model

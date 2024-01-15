@@ -1,10 +1,14 @@
+import copy
+
 import numpy as np
 from tqdm import tqdm
 
 from neuralnet import NeuralNetwork
 
 
-def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config):
+def model_train(
+    model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config
+) -> tuple[NeuralNetwork, list[float], list[float], list[float], list[float]]:
     """
     TODO: Train your model here.
     Learns the weights (parameters) for our model
@@ -37,15 +41,26 @@ def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config
 
     batch_size = config["batch_size"]
     epochs = config["epochs"]
-    epochs = 10
-    print(f"Running with {epochs = }, {batch_size = }")
+    uses_momentum = config["momentum"]
+    if uses_momentum:
+        gamma = config["momentum_gamma"]
+    else:
+        gamma = 0.0
+
+    uses_early_stop = config["early_stop"]
+    patience_limit = config["early_stop_epoch"] if uses_early_stop else 99999999999
+
+    current_patience = 0
+    current_best_loss = float("inf")
+    current_best_model: NeuralNetwork | None = None
+
+    print(f"Running with {epochs = }, {batch_size = }, {patience_limit = }")
     with tqdm(total=epochs, unit="epoch") as bar:
         for _ in range(epochs):
             train_loss = 0.0  # for loss
             correct = 0  # for accuracy
             n = 0  # total number of iterations
 
-            # Train model
             for i in range(0, len(x_train), batch_size):
                 x_train_batch = x_train[i : i + batch_size]
                 y_train_batch = y_train[i : i + batch_size]
@@ -64,9 +79,7 @@ def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config
                     # otherwise only update the gradient accumulator
                     # See SGD (Algorithm 1) on homework
                     u = i == x_train_batch.shape[0] - 1
-                    model.backward(update_weights=u)
-
-                model.new_batch()  # reset gradient accumulator
+                    model.backward(update_weights=u, gamma=gamma)
 
             epoch_loss = train_loss / n
             train_epoch_losses.append(epoch_loss)  # loss at end of epoch
@@ -86,15 +99,32 @@ def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config
                     correct += 1
 
             val_loss_avg = val_loss / n
+
             val_epoch_losses.append(val_loss_avg)
             val_acc = correct / n
             val_epoch_accuracy.append(val_acc)
 
-            bar.desc = f"Train: {epoch_acc*100:.2f}%, Validate: {val_acc*100:.2f}%"
+            if val_loss_avg < current_best_loss:
+                current_best_loss = val_loss_avg
+                current_best_model = copy.deepcopy(model)
+                current_patience = 0
+            else:
+                current_patience += 1
+
+            if current_patience >= patience_limit:
+                print(
+                    f"Early stopping. Bad performance for more than {patience_limit} consecutive epochs."
+                )
+                break
+
+            bar.desc = (
+                f"T: {epoch_acc*100:.2f}%, V: {val_acc*100:.2f}%, P: {current_patience}"
+            )
             bar.update(1)
 
+    assert current_best_model is not None
     return (
-        model,
+        current_best_model,
         train_epoch_losses,
         train_epoch_accuracy,
         val_epoch_losses,
