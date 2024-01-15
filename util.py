@@ -1,3 +1,4 @@
+import json
 import os
 import pickle
 
@@ -7,6 +8,7 @@ import pandas as pd
 import yaml
 
 import constants
+from constants import save_location
 
 
 def load_config(path):
@@ -59,47 +61,6 @@ def one_hot_encoding(labels, num_classes=10):
     # wow im so clever
     ret[range(N), labels] = 1.0
     return ret
-
-
-def generate_minibatches(
-    dataset: tuple[np.ndarray, np.ndarray], batch_size=64
-) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Generates minibatches of the dataset
-
-    args:
-        dataset : 2D Array N (examples) X d (dimensions)
-        batch_size: mini batch size. Default value=64
-
-    yields:
-        (X,y) tuple of size=batch_size
-
-    """
-
-    X, y = dataset
-    l_idx, r_idx = 0, batch_size
-    while r_idx < len(X):
-        yield X[l_idx:r_idx], y[l_idx:r_idx]
-        l_idx, r_idx = r_idx, r_idx + batch_size
-
-    yield X[l_idx:], y[l_idx:]
-
-
-def calculateCorrect(
-    y, t
-):  # Feel free to use this function to return accuracy instead of number of correct predictions
-    """
-    TODO
-    Calculates the number of correct predictions
-
-    args:
-        y: Predicted Probabilities
-        t: Labels in one hot encoding
-
-    returns:
-        the number of correct predictions
-    """
-    raise NotImplementedError("calculateCorrect not implemented")
 
 
 def append_bias(X):
@@ -305,23 +266,26 @@ def load_data(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
+    raw_fn = "raw.pkl"
+    raw_path = os.path.join(path, raw_fn)
+    proc_fn = "processed.pkl"
+    proc_path = os.path.join(path, proc_fn)
     # Check if raw data is cached, otherwise fetch and cache
-    if not os.path.exists(os.path.join(path, "raw.pkl")):
+    if not os.path.exists(raw_path):
         print("Fetching MNIST data...")
         train_features, train_labels, test_features, test_labels = get_mnist()
         # Save data using pickle
-        with open(os.path.join(path, "raw.pkl"), "wb") as f:
+        with open(raw_path, "wb") as f:
             pickle.dump([train_features, train_labels, test_features, test_labels], f)
         print(f"Done. All raw data can be found in {path}")
 
     # Load raw data from pickle file
-    print(f"Loading MNIST data from {path}raw.pkl")
-    with open(f"{path}raw.pkl", "rb") as f:
+    with open(raw_path, "rb") as f:
         train_images, train_labels, test_images, test_labels = pickle.load(f)
-    print("Done.\n")
 
     # Check if processed data is cached, otherwise process and cache
-    if not os.path.exists(os.path.join(path, "processed.pkl")):
+    if not os.path.exists(proc_path):
+        print("Processing data")
         # Reformat the images and labels
         train_images, test_images = (
             train_images.reshape(train_images.shape[0], -1),
@@ -364,7 +328,7 @@ def load_data(path):
         print(f"Done. All processed data can be found in {path}")
 
     # Load processed data from pickle file
-    with open(f"{path}processed.pkl", "rb") as f:
+    with open(proc_path, "rb") as f:
         (
             train_normalized_images,
             train_one_hot_labels,
@@ -373,7 +337,6 @@ def load_data(path):
             test_normalized_images,
             test_one_hot_labels,
         ) = pickle.load(f)
-    print("Done.\n")
 
     return (
         train_normalized_images,
@@ -383,3 +346,15 @@ def load_data(path):
         test_normalized_images,
         test_one_hot_labels,
     )
+
+
+def save_loss_accuracy(test_loss, test_acc, val_loss, val_acc):
+    fn = os.path.join(save_location, "loss_acc_over_epochs.json")
+    info = {
+        "test_loss": test_loss,
+        "test_acc": test_acc,
+        "val_loss": val_loss,
+        "val_acc": val_acc,
+    }
+    with open(fn, "w") as f:
+        json.dump(info, f)

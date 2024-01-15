@@ -9,7 +9,7 @@ from constants import (
     dataset_dir,
 )
 from neuralnet import NeuralNetwork
-from train import model_train
+from train import model_test, model_train
 
 
 # TODO
@@ -53,6 +53,7 @@ def main(args):
     if args.load and args.save:
         raise Exception("Load and save flags cannot both be toggled.")
 
+<<<<<<< HEAD
     if args.load:
         if os.path.exists("saved_model.pkl"): 
             print("Loading cached model from saved_model.pkl.")
@@ -71,14 +72,18 @@ def main(args):
                 pickle.dump([model, tl, ta, vl, va], file)
                 print(f"Trained model saved as saved_model.pkl")
         
+=======
+    util.save_loss_accuracy(tl, ta, vl, va)
+
+>>>>>>> 581d0480c1b431213328f93a2a3aab87922735cb
     if args.plot:
         util.plot(tl, ta, vl, va, None)
 
     # test the model
-    # test_acc, test_loss = model_test(model, x_test, y_test)
+    test_acc, test_loss = model_test(model, x_test, y_test)
 
     # Print test accuracy and test loss
-    # print("Test Accuracy:", test_acc, " Test Loss:", test_loss)
+    print("Test Accuracy:", test_acc, " Test Loss:", test_loss)
 
 
 if __name__ == "__main__":
