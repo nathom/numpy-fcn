@@ -168,4 +168,8 @@ writeup/*
 !writeup/*.sty
 !writeup/sections/
 !writeup/sections/*.tex
+!writeup/images/
+!writeup/images/*.png
+!writeup/images/*.jpg
+!writeup/images/*.jpeg
 models/
