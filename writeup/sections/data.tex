@@ -1,4 +1,52 @@
 \section{Data Loading}
-A short description about the dataset loaded, split between training and
-validation set and how the data was normalized. Mean and std values for any one
-train image.
+The dataset we will be using to train a multi-layer neural network is the
+MNIST dataset. The {MNIST}\footnote{\textit{Modified} National Institute of
+	Standards and Technology} dataset is a collection of grayscale handwritten
+digits commonly used for training various image processing systems. The dataset
+contains 60,000 training images and 10,000 testing images each normalized to $28
+	\times 28$ pixels.
+
+\subsection{Data Splitting}
+The MNIST dataset is split using an 80-20 ratio. Since the MNIST dataset
+contains 60,000 training images and 10,000 testing images, we expect to have
+48,000 images and target labels in the training set and 12,000 images and
+target labels in the validation set. Optionally, the dataset is randomly
+shuffled and seeded for reproducability.
+
+\subsection{Normalization}
+The training and validation datasets are normalized by z-score.
+
+$$ \vec{z} = \frac{\vec{x} - \mu}{\sigma} $$
+
+Here, $\vec{x}$ is the flattened ($ 28 \times 28 = 784$) vector, $\mu$ is
+the mean pixel value, and $\sigma$ is the standard deviation over the single
+image. The resulting vector $\vec{z}$ (also size $784$) contains the z-score
+normalization of the image where each value will range between -1 and 1 (unit
+variance) and have mean 0.
+
+\subsection{Mean and Standard Deviation}
+Consider the following image from the MNIST dataset:
+
+$$ some image obtained with PIL $$
+
+Its (unnormalized) vector representation can be written as
+
+$$ \vec{x}^{(n)}  =
+	\begin{bmatrix}
+		0.0    \\
+		\vdots \\
+		0.0
+	\end{bmatrix}
+$$
+
+where each of the values in $\vec{x}^{(n)}$ is some value between 0 for white and
+255.0 (black). Its mean ($\mu$) can be obtained by
+
+$$ \mu = \frac{v_1 + v_2 + \ldots + v_n}{n} $$
+
+and standard deviation ($\sigma$) by
+
+$$ \sigma = \sqrt{\frac{\sum_{i=1}^{n} (v_i - \mu)^2}{n}} $$
+
+These values can then be used to obtain $\vec{z}^{(n)}$, the z-score
+normalization of $\vec{x}^{(n)}$.
