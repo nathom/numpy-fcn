@@ -25,28 +25,37 @@ normalization of the image where each value will range between -1 and 1 (unit
 variance) and have mean 0.
 
 \subsection{Mean and Standard Deviation}
-Consider the following image from the MNIST dataset:
+Consider the above image from the MNIST dataset:
 
-$$ some image obtained with PIL $$
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.25\textwidth]{./images/mnist_digit.png}
+	\caption{Sample MNIST Digit}
+	\label{fig:example}
+\end{figure}
 
 Its (unnormalized) vector representation can be written as
 
-$$ \vec{x}^{(n)}  =
+\begin{equation*}
+	\vec{x}^{(n)}  =
 	\begin{bmatrix}
-		0.0    \\
+		x_1    \\
+		x_2    \\
 		\vdots \\
-		0.0
+		x_n
 	\end{bmatrix}
-$$
+\end{equation*}
 
-where each of the values in $\vec{x}^{(n)}$ is some value between 0 for white and
-255.0 (black). Its mean ($\mu$) can be obtained by
+where each of the values in $\vec{x}^{(784)}$ is some value between 0 for black
+and 255.0 for white. Its mean ($\mu$) and standard deviation ($\sigma$) can be
+obtained by
 
-$$ \mu = \frac{v_1 + v_2 + \ldots + v_n}{n} $$
-
-and standard deviation ($\sigma$) by
-
-$$ \sigma = \sqrt{\frac{\sum_{i=1}^{n} (v_i - \mu)^2}{n}} $$
+\begin{equation*}
+	\begin{aligned}
+		\mu    & = \frac{x_1 + x_2 + \ldots + x_n}{n}            & = 0.13714225924744897 \\
+		\sigma & = \sqrt{\frac{\sum_{i=1}^{n} (x_i - \mu)^2}{n}} & = 0.31112823799846606
+	\end{aligned}
+\end{equation*}
 
 These values can then be used to obtain $\vec{z}^{(n)}$, the z-score
 normalization of $\vec{x}^{(n)}$.
