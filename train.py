@@ -1,3 +1,4 @@
+import numpy as np
 from tqdm import trange
 
 from neuralnet import NeuralNetwork
@@ -29,6 +30,14 @@ def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config
     x_train = append_bias(x_train)
     x_valid = append_bias(x_valid)
 
+    # digit_show(x_train[4][:-1], y_train[4])
+
+    # N = 1000
+    # x_train = x_train[:N, :]
+    # x_valid = x_train[:N, :]
+    # y_train = y_train[:N, :]
+    # y_valid = y_train[:N, :]
+
     # average loss values logged every epoch
     train_epoch_losses: list[float] = []
     val_epoch_losses: list[float] = []
@@ -37,8 +46,6 @@ def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config
 
     batch_size = config["batch_size"]
     epochs = config["epochs"]
-    batch_size = 128
-    epochs = 10
     print(f"Running with {epochs = }, {batch_size = }")
     for _ in trange(epochs):
         train_loss = 0.0  # for loss
@@ -55,7 +62,8 @@ def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config
                 assert loss is not None
 
                 train_loss += float(loss)
-                if (model.y == y).all():
+                assert model.y is not None
+                if np.argmax(model.y) == np.argmax(y):
                     correct += 1
                 n += 1
 
@@ -67,8 +75,11 @@ def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config
 
             model.new_batch()  # reset gradient accumulator
 
-        train_epoch_losses.append(train_loss / n)  # loss at end of epoch
-        train_epoch_accuracy.append(correct / n)  # accuracy at end of epoch
+        epoch_loss = train_loss / n
+        train_epoch_losses.append(epoch_loss)  # loss at end of epoch
+        epoch_acc = correct / n
+        train_epoch_accuracy.append(epoch_acc)  # accuracy at end of epoch
+        print(f"Loss: {epoch_loss}, Acc: {epoch_acc}")
 
         # Evaluate on validation set
         val_loss = 0.0
@@ -78,7 +89,8 @@ def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config
             loss = model.forward(x, y)
             assert loss is not None
             val_loss += float(loss)
-            if (model.y == y).all():
+            assert model.y is not None
+            if np.argmax(model.y) == np.argmax(y):
                 correct += 1
         val_epoch_losses.append(val_loss / n)
         val_epoch_accuracy.append(correct / n)
@@ -112,7 +124,17 @@ def model_test(model: NeuralNetwork, X_test, y_test):
     correct = 0
     for x, y in zip(X_test, y_test):
         loss = model.forward(x, y)
-        if (model.y == y).all():
+        assert model.y is not None
+        if np.argmax(model.y) == np.argmax(y):
             correct += 1
         losses.append(loss)
     return correct / len(y_test), losses
+
+
+def digit_show(x, y):
+    print(f"Correct: {y}")
+    import matplotlib.pyplot as plt
+
+    plt.imshow(x.reshape(28, 28), cmap="gray")
+    plt.axis("off")  # Turn off axis labels
+    plt.show()

@@ -54,9 +54,8 @@ def one_hot_encoding(labels, num_classes=10):
         oneHot : N X num_classes 2D array
     """
     N = len(labels)
-    labels = labels.astype(np.int32)
-    ret = np.zeros((N, num_classes), dtype=np.int32)
-    print(f"{labels.shape=}, {ret.shape=}, {N=}")
+    labels = labels.astype(np.int32).flatten()
+    ret = np.zeros((N, num_classes))
     # wow im so clever
     ret[range(N), labels] = 1.0
     return ret
@@ -340,7 +339,9 @@ def load_data(path):
 
         # Preprocess data
         train_normalized_images = normalize_data(train_images)  # very expensive
+        print(train_labels[0])
         train_one_hot_labels = one_hot_encoding(train_labels, num_classes=10)  # (n, 10)
+        print(train_one_hot_labels[0])
 
         val_normalized_images = normalize_data(val_images)
         val_one_hot_labels = one_hot_encoding(val_labels, num_classes=10)  # (n, 10)

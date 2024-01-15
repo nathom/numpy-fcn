@@ -103,7 +103,7 @@ class Activation:
         """
         Deliberately returning 1 for output layer case since we don't multiply by any activation for final layer's delta. Feel free to use/disregard it
         """
-        return np.array([1.0])  # Deliberately returning 1 for output layer case
+        return x
 
 
 class Layer:
@@ -125,9 +125,7 @@ class Layer:
         self.z: np.ndarray | None = None  # Output After Activation
         self.activation: Activation = activation
 
-        self.dw: float = (
-            0.0  # Save the gradient w.r.t w in this. w already includes bias term
-        )
+        self.dw = np.zeros_like(self.w)
 
     def __call__(self, x):
         """
@@ -143,11 +141,13 @@ class Layer:
         self.x = x  # (785,)
         self.a = x @ self.w  # (785,) * (785,10) -> (10,)
         self.z = self.activation(self.a)
+        # print(self.x.shape, self.a.shape, self.z.shape)
+        # print(self.z)
         return self.z
 
     def backward(
         self,
-        deltaCur,
+        delta_cur: np.ndarray,  # (N,)
         learning_rate: float,
         momentum_gamma,
         regularization,
@@ -165,10 +165,18 @@ class Layer:
         When implementing softmax regression part, just focus on implementing the single-layer case first.
         """
         assert self.a is not None
-        self.dw += deltaCur * self.activation.backward(self.a)
+        assert self.x is not None
+
+        if self.activation.activation_type == "output":
+            delta_new = delta_cur
+        else:
+            raise NotImplementedError
+
+        self.dw += self.x.reshape((-1, 1)) @ delta_new.reshape((1, -1))
+        assert self.w.shape == self.dw.shape
         if update_weights:
-            self.w -= learning_rate * self.dw
-        return self.dw
+            self.w += learning_rate * self.dw
+        return delta_new
 
 
 class NeuralNetwork:
@@ -232,12 +240,15 @@ class NeuralNetwork:
         """
         return -np.sum(targets @ np.log(outputs))
 
+    def output_loss(self, outputs, targets):
+        return targets - outputs
+
     def backward(self, update_weights: bool):
         """
         TODO: Implement backpropagation here by calling backward method of Layers class.
         Call backward methods of individual layers.
         """
-        delta = self.loss(self.y, self.targets)
+        delta = self.output_loss(self.y, self.targets)
         for layer in reversed(self.layers):
             delta = layer.backward(
                 delta, self.learning_rate, None, None, update_weights=update_weights
