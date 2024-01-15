@@ -1,5 +1,7 @@
 import numpy as np
 
+from util import append_bias
+
 
 class Activation:
     """
@@ -125,7 +127,7 @@ class Layer:
         self.z: np.ndarray | None = None  # Output After Activation
         self.activation: Activation = activation
 
-        self.dw = np.zeros_like(self.w)
+        self.dw: np.ndarray = np.zeros_like(self.w)
 
     def __call__(self, x):
         """
@@ -141,18 +143,16 @@ class Layer:
         self.x = x  # (785,)
         self.a = x @ self.w  # (785,) * (785,10) -> (10,)
         self.z = self.activation(self.a)
-        # print(self.x.shape, self.a.shape, self.z.shape)
-        # print(self.z)
         return self.z
 
     def backward(
         self,
-        delta_cur: np.ndarray,  # (N,)
+        next_delta: np.ndarray,  # (N,)
         learning_rate: float,
         momentum_gamma,
         regularization,
         update_weights: bool,
-    ):
+    ) -> np.ndarray:
         """
         TODO: Write the code for backward pass. This takes in gradient from its next layer as input and
         computes gradient for its weights and the delta to pass to its previous layers. gradReqd is used to specify whether to update the weights i.e. whether self.w should
@@ -168,15 +168,23 @@ class Layer:
         assert self.x is not None
 
         if self.activation.activation_type == "output":
-            delta_new = delta_cur
-        else:
-            raise NotImplementedError
+            self.dw += self.x.reshape((-1, 1)) @ next_delta.reshape((1, -1))
+            weighted_delta = self.w[:-1, :] @ next_delta
+            if update_weights:
+                self.w += learning_rate * self.dw
+            # print(f"{w_delta.shape = }, {self.activation.activation_type}")
+            return weighted_delta
 
-        self.dw += self.x.reshape((-1, 1)) @ delta_new.reshape((1, -1))
-        assert self.w.shape == self.dw.shape
+        # print(f"{self.w.shape=}, {next_delta.shape}")
+        weighted_delta = self.w @ next_delta
+        assert weighted_delta.shape == (self.w.shape[0],)
+        this_delta = self.activation.backward(self.a) * next_delta
+        weighted_deltas = self.w[:-1, :] @ this_delta
+        self.dw += self.x.reshape((-1, 1)) @ this_delta.reshape((1, -1))
         if update_weights:
             self.w += learning_rate * self.dw
-        return delta_new
+
+        return weighted_deltas
 
 
 class NeuralNetwork:
@@ -227,7 +235,8 @@ class NeuralNetwork:
         """
         output = x
         for layer in self.layers:
-            output = layer(output)
+            output = layer.forward(append_bias(output))
+
         self.y = output
         if targets is not None:
             self.targets = targets
@@ -248,7 +257,7 @@ class NeuralNetwork:
         TODO: Implement backpropagation here by calling backward method of Layers class.
         Call backward methods of individual layers.
         """
-        delta = self.output_loss(self.y, self.targets)
+        delta = self.output_loss(self.y, self.targets)  # (10,)
         for layer in reversed(self.layers):
             delta = layer.backward(
                 delta, self.learning_rate, None, None, update_weights=update_weights

@@ -7,9 +7,12 @@ import util
 from constants import (
     config_dir,
     dataset_dir,
+    models_dir,
 )
 from neuralnet import NeuralNetwork
 from train import model_test, model_train
+
+# install(show_locals=True)
 
 
 # TODO
@@ -30,6 +33,8 @@ def main(args):
         raise NotImplementedError
     elif args.experiment == "test_activation":  # Rubric #8: Activation Experiments
         raise NotImplementedError
+    elif args.experiment == "multilayer":  # Rubric #8: Activation Experiments
+        config_fn = "multilayer.yaml"
     else:
         raise NotImplementedError
 
@@ -50,26 +55,30 @@ def main(args):
     # Create a Neural Network object which will be our model
     model = NeuralNetwork(config)
 
-    if args.load and args.save:
-        raise Exception("Load and save flags cannot both be toggled.")
+    if args.load is not None and args.save is not None:
+        raise Exception("Cannot load and save model")
 
     if args.load:
-        if os.path.exists("saved_model.pkl"):
-            print("Loading cached model from saved_model.pkl.")
-            with open("saved_model.pkl", "rb") as f:
-                model, tl, ta, vl, va = pickle.load(f)
-        else:
-            raise Exception("File saved_model.pkl does not exist.")
+        path = os.path.join(models_dir, args.load + ".pkl")
+        if not os.path.exists(path):
+            raise Exception(f"File {path} does not exist.")
+
+        print(f"Loading cached model from {path}")
+        with open(path, "rb") as f:
+            model, tl, ta, vl, va = pickle.load(f)
     else:
+        path = os.path.join(models_dir, args.save + ".pkl")
+        if os.path.exists(path):
+            print(f"WARNING: {path} already exists. Overwriting.")
+
         model, tl, ta, vl, va = model_train(
             model, x_train, y_train, x_valid, y_valid, config
         )
 
-        if args.save:
-            # Save cached model
-            with open("saved_model.pkl", "wb") as file:
-                pickle.dump([model, tl, ta, vl, va], file)
-                print("Trained model saved as saved_model.pkl")
+        # Save cached model
+        with open(path, "wb") as file:
+            pickle.dump([model, tl, ta, vl, va], file)
+            print(f"Trained model saved at {path}")
 
     util.save_loss_accuracy(tl, ta, vl, va)
 
@@ -99,13 +108,13 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--save",
-        action="store_true",
-        help="Saves trained model as saved_model.pkl",
+        type=str,
+        help="Save model with name.",
     )
     parser.add_argument(
         "--load",
-        action="store_true",
-        help="Attempt to load model if saved_model.pkl exists.",
+        type=str,
+        help="Load model with name.",
     )
     args = parser.parse_args()
     main(args)

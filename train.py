@@ -2,7 +2,6 @@ import numpy as np
 from tqdm import tqdm
 
 from neuralnet import NeuralNetwork
-from util import append_bias
 
 
 def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config):
@@ -27,8 +26,8 @@ def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config
     # Read in the esssential configs
     # batch_size = config["batch_size"]
 
-    x_train = append_bias(x_train)
-    x_valid = append_bias(x_valid)
+    # x_train = append_bias(x_train)
+    # x_valid = append_bias(x_valid)
 
     # average loss values logged every epoch
     train_epoch_losses: list[float] = []
@@ -38,6 +37,7 @@ def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config
 
     batch_size = config["batch_size"]
     epochs = config["epochs"]
+    epochs = 10
     print(f"Running with {epochs = }, {batch_size = }")
     with tqdm(total=epochs, unit="epoch") as bar:
         for _ in range(epochs):
@@ -118,7 +118,6 @@ def model_test(model: NeuralNetwork, X_test, y_test):
         test loss
     """
 
-    X_test = append_bias(X_test)
     N = X_test.shape[0]
     loss = 0.0
     correct = 0
