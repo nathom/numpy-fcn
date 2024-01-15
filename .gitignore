@@ -168,3 +168,4 @@ writeup/*
 !writeup/*.sty
 !writeup/sections/
 !writeup/sections/*.tex
+models/
