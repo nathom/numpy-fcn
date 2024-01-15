@@ -220,7 +220,7 @@ class NeuralNetwork:
         """
         return self.forward(x, targets)
 
-    def forward(self, x, targets=None):
+    def forward(self, x, targets=None) -> float | None:
         """
         TODO: Compute forward pass through all the layers in the network and return the loss.
         If targets are provided, return loss and accuracy/number of correct predictions as well.
@@ -231,7 +231,7 @@ class NeuralNetwork:
         self.y = output
         if targets is not None:
             self.targets = targets
-            return self.loss(output, targets)
+            return float(self.loss(output, targets))
         return None
 
     def loss(self, outputs, targets):

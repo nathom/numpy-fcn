@@ -1,3 +1,4 @@
+import json
 import os
 import pickle
 
@@ -7,6 +8,7 @@ import pandas as pd
 import yaml
 
 import constants
+from constants import save_location
 
 
 def load_config(path):
@@ -344,3 +346,15 @@ def load_data(path):
         test_normalized_images,
         test_one_hot_labels,
     )
+
+
+def save_loss_accuracy(test_loss, test_acc, val_loss, val_acc):
+    fn = os.path.join(save_location, "loss_acc_over_epochs.json")
+    info = {
+        "test_loss": test_loss,
+        "test_acc": test_acc,
+        "val_loss": val_loss,
+        "val_acc": val_acc,
+    }
+    with open(fn, "w") as f:
+        json.dump(info, f)

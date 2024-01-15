@@ -8,7 +8,7 @@ from constants import (
     dataset_dir,
 )
 from neuralnet import NeuralNetwork
-from train import model_train
+from train import model_test, model_train
 
 
 # TODO
@@ -54,14 +54,16 @@ def main(args):
         model, x_train, y_train, x_valid, y_valid, config
     )
 
+    util.save_loss_accuracy(tl, ta, vl, va)
+
     if args.plot:
         util.plot(tl, ta, vl, va, None)
 
     # test the model
-    # test_acc, test_loss = model_test(model, x_test, y_test)
+    test_acc, test_loss = model_test(model, x_test, y_test)
 
     # Print test accuracy and test loss
-    # print("Test Accuracy:", test_acc, " Test Loss:", test_loss)
+    print("Test Accuracy:", test_acc, " Test Loss:", test_loss)
 
 
 if __name__ == "__main__":
