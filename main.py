@@ -1,5 +1,6 @@
 import argparse
 import os
+import pickle
 
 import gradient
 import util
@@ -47,13 +48,29 @@ def main(args):
         return 1
 
     # Create a Neural Network object which will be our model
-    model = NeuralNetwork(config)
+    model = NeuralNetwork(config) 
 
-    # train the model
-    model, tl, ta, vl, va = model_train(
-        model, x_train, y_train, x_valid, y_valid, config
-    )
+    if args.load and args.save:
+        raise Exception("Load and save flags cannot both be toggled.")
 
+    if args.load:
+        if os.path.exists("saved_model.pkl"): 
+            print("Loading cached model from saved_model.pkl.")
+            with open(f"saved_model.pkl", "rb") as f:
+                model, tl, ta, vl, va = pickle.load(f)
+        else:
+            raise Exception("File saved_model.pkl does not exist.")
+    else:
+        model, tl, ta, vl, va = model_train(
+                    model, x_train, y_train, x_valid, y_valid, config
+            )
+
+        if args.save:
+            # Save cached model
+            with open("saved_model.pkl", "wb") as file:
+                pickle.dump([model, tl, ta, vl, va], file)
+                print(f"Trained model saved as saved_model.pkl")
+        
     if args.plot:
         util.plot(tl, ta, vl, va, None)
 
@@ -77,6 +94,16 @@ if __name__ == "__main__":
         "--plot",
         action="store_true",
         help="Plot the results",
+    )
+    parser.add_argument(
+        "--save",
+        action="store_true",
+        help="Saves trained model as saved_model.pkl",
+    )
+    parser.add_argument(
+        "--load",
+        action="store_true",
+        help="Attempt to load model if saved_model.pkl exists.",
     )
     args = parser.parse_args()
     main(args)
