@@ -48,34 +48,31 @@ def main(args):
         return 1
 
     # Create a Neural Network object which will be our model
-    model = NeuralNetwork(config) 
+    model = NeuralNetwork(config)
 
     if args.load and args.save:
         raise Exception("Load and save flags cannot both be toggled.")
 
-<<<<<<< HEAD
     if args.load:
-        if os.path.exists("saved_model.pkl"): 
+        if os.path.exists("saved_model.pkl"):
             print("Loading cached model from saved_model.pkl.")
-            with open(f"saved_model.pkl", "rb") as f:
+            with open("saved_model.pkl", "rb") as f:
                 model, tl, ta, vl, va = pickle.load(f)
         else:
             raise Exception("File saved_model.pkl does not exist.")
     else:
         model, tl, ta, vl, va = model_train(
-                    model, x_train, y_train, x_valid, y_valid, config
-            )
+            model, x_train, y_train, x_valid, y_valid, config
+        )
 
         if args.save:
             # Save cached model
             with open("saved_model.pkl", "wb") as file:
                 pickle.dump([model, tl, ta, vl, va], file)
-                print(f"Trained model saved as saved_model.pkl")
-        
-=======
+                print("Trained model saved as saved_model.pkl")
+
     util.save_loss_accuracy(tl, ta, vl, va)
 
->>>>>>> 581d0480c1b431213328f93a2a3aab87922735cb
     if args.plot:
         util.plot(tl, ta, vl, va, None)
 

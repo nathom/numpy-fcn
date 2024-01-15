@@ -1,5 +1,5 @@
 import numpy as np
-from tqdm import trange
+from tqdm import tqdm
 
 from neuralnet import NeuralNetwork
 from util import append_bias
@@ -38,59 +38,60 @@ def model_train(model: NeuralNetwork, x_train, y_train, x_valid, y_valid, config
 
     batch_size = config["batch_size"]
     epochs = config["epochs"]
-    epochs = 10
     print(f"Running with {epochs = }, {batch_size = }")
-    for _ in trange(epochs):
-        train_loss = 0.0  # for loss
-        correct = 0  # for accuracy
-        n = 0  # total number of iterations
+    with tqdm(total=epochs, unit="epoch") as bar:
+        for _ in range(epochs):
+            train_loss = 0.0  # for loss
+            correct = 0  # for accuracy
+            n = 0  # total number of iterations
 
-        # Train model
-        for i in range(0, len(x_train), batch_size):
-            x_train_batch = x_train[i : i + batch_size]
-            y_train_batch = y_train[i : i + batch_size]
+            # Train model
+            for i in range(0, len(x_train), batch_size):
+                x_train_batch = x_train[i : i + batch_size]
+                y_train_batch = y_train[i : i + batch_size]
 
-            for i, (x, y) in enumerate(zip(x_train_batch, y_train_batch)):
+                for i, (x, y) in enumerate(zip(x_train_batch, y_train_batch)):
+                    loss = model.forward(x, y)
+                    assert loss is not None
+
+                    train_loss += float(loss)
+                    assert model.y is not None
+                    if np.argmax(model.y) == np.argmax(y):
+                        correct += 1
+                    n += 1
+
+                    # If we're on the last iteration of the batch, update weights
+                    # otherwise only update the gradient accumulator
+                    # See SGD (Algorithm 1) on homework
+                    u = i == x_train_batch.shape[0] - 1
+                    model.backward(update_weights=u)
+
+                model.new_batch()  # reset gradient accumulator
+
+            epoch_loss = train_loss / n
+            train_epoch_losses.append(epoch_loss)  # loss at end of epoch
+            epoch_acc = correct / n
+            train_epoch_accuracy.append(epoch_acc)  # accuracy at end of epoch
+
+            # Evaluate on validation set
+            val_loss = 0.0
+            correct = 0
+            n = x_valid.shape[0]
+            for x, y in zip(x_valid, y_valid):
                 loss = model.forward(x, y)
                 assert loss is not None
-
-                train_loss += float(loss)
+                val_loss += float(loss)
                 assert model.y is not None
                 if np.argmax(model.y) == np.argmax(y):
                     correct += 1
-                n += 1
 
-                # If we're on the last iteration of the batch, update weights
-                # otherwise only update the gradient accumulator
-                # See SGD (Algorithm 1) on homework
-                u = i == x_train_batch.shape[0] - 1
-                model.backward(update_weights=u)
+            val_loss_avg = val_loss / n
+            val_epoch_losses.append(val_loss_avg)
+            val_acc = correct / n
+            val_epoch_accuracy.append(val_acc)
 
-            model.new_batch()  # reset gradient accumulator
-
-        epoch_loss = train_loss / n
-        train_epoch_losses.append(epoch_loss)  # loss at end of epoch
-        epoch_acc = correct / n
-        train_epoch_accuracy.append(epoch_acc)  # accuracy at end of epoch
-
-        # Evaluate on validation set
-        val_loss = 0.0
-        correct = 0
-        n = x_valid.shape[0]
-        for x, y in zip(x_valid, y_valid):
-            loss = model.forward(x, y)
-            assert loss is not None
-            val_loss += float(loss)
-            assert model.y is not None
-            if np.argmax(model.y) == np.argmax(y):
-                correct += 1
-
-        val_loss_avg = val_loss / n
-        val_epoch_losses.append(val_loss_avg)
-        val_acc = correct / n
-        val_epoch_accuracy.append(val_acc)
-
-        print(f"Train: {epoch_acc*100:.2f}%, Validate: {val_acc*100:.2f}%")
+            bar.desc = f"Train: {epoch_acc*100:.2f}%, Validate: {val_acc*100:.2f}%"
+            bar.update(1)
 
     return (
         model,
@@ -117,6 +118,7 @@ def model_test(model: NeuralNetwork, X_test, y_test):
         test loss
     """
 
+    X_test = append_bias(X_test)
     N = X_test.shape[0]
     loss = 0.0
     correct = 0
