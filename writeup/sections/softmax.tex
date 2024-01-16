@@ -61,20 +61,18 @@ In pseudocode, we have
 
 In a single layer neural network as defined in \texttt{./config\_4.yaml}, we
 obtain the following results using softmax regression over 100 epochs. Below we
-plot training and validation loss versus epochs as well as training and
-validation accuracy versus epochs.
+plot loss versus epochs~\ref{fig:loss} and accuracy versus epochs~\ref{fig:acc}.
 
-\begin{figure}[hb]
+\begin{figure}[ht]
 	\centering
+	\label{fig:loss}
 	\includegraphics[width=1.0\textwidth]{./images/loss.png}
-	\caption{Training/Validation Loss over 100 Epochs}
+	\caption{Training/Validation Loss/Accuracy over 100 Epochs}
 \end{figure}
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics[width=0.9\textwidth]{./images/acc.png}
+	\label{fig:acc}
+	\includegraphics[width=1.0\textwidth]{./images/acc.png}
 	\caption{Training/Validation Accuracy over 100 Epochs}
 \end{figure}
-
-
-Lastly, on the test set, the model achieves $90.31 \%$ accuracy.

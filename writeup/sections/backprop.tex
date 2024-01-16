@@ -1,1 +1,45 @@
 \section{Backpropagation}
+
+\subsection{Numerical Approximation of Gradients}
+To verify the accuracy of our backpropagation implementation, we can compute the
+slope with respect to one weight using numerical approximation
+\begin{equation*}
+	\frac{d}{d w} E^n(w) \approx \frac{E^n(w+\epsilon)-E^n(w-\epsilon)}{2 \epsilon}
+\end{equation*}
+We can perform this approximation for any given input to hidden weight $w_{ij}$
+and hidden to output weights $w_{jk}$ for any type of perceptron including bias.
+In our experiments, we let $\epsilon = 10^{-2}$.
+
+In the computation of numerical approximation, we compute the loss of $E^n\left(
+	w_{ij} + \epsilon \right) $ and $E^n\left( w_{ij} - \epsilon \right) $ by
+performing a forward pass with the weight $w_{ij} = w_{ij} \pm \epsilon$ and
+reporting the loss. Here, we must be careful to only individually evaluate
+loss for a given weight with respect to the rest of the network. Otherwise,
+the reported loss is not necessarily loss with respect to the single weight
+$w_{ij}$ or $w_{jk}$ we want to observe.
+
+\subsection{Backpropagation Evaluation}
+In table~\ref{tab:gradient_table} we measure the approximate gradient (column 3)
+and the gradient computed via our implementation of backpropagation (column 2),
+and their absolute difference (column 4) for a given type of weight. The
+observed absolute difference is within $O\left( \epsilon^2 \right)$ for all
+weigh types.
+\begin{table}
+	\renewcommand{\arraystretch}{1.25}
+	\centering
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		Type of Weight              & Actual Gradient          & Approximation Gradient   & Absolute Difference     \\
+		\hline
+		$w_{ij}$ (input to hidden)  & $-1.2282 \times 10^{-3}$ & $-1.2282 \times 10^{-3}$ & $6.6801 \times 10^{-9}$ \\
+		$w_{ij}$ (input to hidden)  & $-1.5063 \times 10^{-3}$ & $-1.5062 \times 10^{-3}$ & $8.3850 \times 10^{-9}$ \\
+		$w_{bj}$ (bias to hidden)   & $3.0450 \times 10^{-3}$  & $3.0449 \times 10^{-3}$  & $9.6145 \times 10^{-8}$ \\
+		$w_{jk}$ (hidden to output) & $1.7730 \times 10^{-2}$  & $1.7730 \times 10^{-2}$  & $6.8067 \times 10^{-9}$ \\
+		$w_{jk}$ (hidden to output) & $1.5636 \times 10^{-2}$  & $1.5636 \times 10^{-2}$  & $4.6279 \times 10^{-9}$ \\
+		$w_{bk}$ (bias to output)   & $-8.9961 \times 10^{-1}$ & $-8.9961 \times 10^{-1}$ & $1.2030 \times 10^{-6}$ \\
+		\hline
+	\end{tabular}
+	\vspace{0.25cm}
+	\caption{Gradient Values with Absolute Differences}
+	\label{tab:gradient_table}
+\end{table}
