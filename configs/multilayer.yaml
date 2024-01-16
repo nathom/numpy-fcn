@@ -6,7 +6,7 @@
 layer_specs: [784, 128, 10]
 
 # Type of non-linear activation function to be used for the layers.
-activation: None
+activation: "tanh"
 
 # The learning rate to be used for training.
 learning_rate: 0.001

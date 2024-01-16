@@ -6,6 +6,7 @@ import util
 from constants import (
     config_dir,
     dataset_dir,
+    models_dir,
 )
 from neuralnet import NeuralNetwork
 from train import model_test, model_train, model_train_fast
@@ -40,9 +41,10 @@ def main(args):
         raise Exception("Load and save flags cannot both be toggled.")
 
     if args.load:
-        if os.path.exists("saved_model.pkl"):
-            print("Loading cached model from saved_model.pkl.")
-            with open("saved_model.pkl", "rb") as f:
+        path = os.path.join(models_dir, args.load + ".pkl")
+        if os.path.exists(path):
+            print(f"Loading cached model from {path}")
+            with open(path, "rb") as f:
                 model, tl, ta, vl, va = pickle.load(f)
         else:
             raise Exception("File saved_model.pkl does not exist.")
@@ -110,12 +112,12 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--save",
-        action="store_true",
+        type=str,
         help="Saves trained model as saved_model.pkl",
     )
     parser.add_argument(
         "--load",
-        action="store_true",
+        type=str,
         help="Attempt to load model if saved_model.pkl exists.",
     )
     args = parser.parse_args()
