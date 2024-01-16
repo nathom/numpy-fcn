@@ -39,6 +39,15 @@ def model_train(
     val_epoch_losses: list[float] = []
     val_epoch_accuracy: list[float] = []
 
+    # initialize with untrained performance 
+    init_ta, init_tl = model_test(model, x_train, y_train)
+    init_va, init_vl = model_test(model, x_valid, y_valid)
+
+    train_epoch_losses.append(init_tl)
+    val_epoch_losses.append(init_vl)
+    train_epoch_accuracy.append(init_ta)
+    val_epoch_accuracy.append(init_va)
+
     batch_size = config["batch_size"]
     epochs = config["epochs"]
     uses_momentum = config["momentum"]
@@ -244,12 +253,3 @@ def model_test(model: NeuralNetwork, X_test, y_test):
         loss += _loss
 
     return correct / N, loss / N
-
-
-def digit_show(x, y):
-    print(f"Correct: {y}")
-    import matplotlib.pyplot as plt
-
-    plt.imshow(x.reshape(28, 28), cmap="gray")
-    plt.axis("off")  # Turn off axis labels
-    plt.show()

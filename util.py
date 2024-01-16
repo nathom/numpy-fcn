@@ -76,17 +76,19 @@ def append_bias(X):
 
 def plot(trainEpochLoss, trainEpochAccuracy, valEpochLoss, valEpochAccuracy, earlyStop):
     """
-    Helper function for creating the plots
+    Helper function for creating separate plots on the same figure
     """
     if not os.path.exists(constants.save_location):
         os.makedirs(constants.save_location)
 
-    fig1, ax1 = plt.subplots()
-    epochs = np.arange(1, len(trainEpochLoss) + 1, 1)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
+
+    # Plotting Loss
+    epochs = np.arange(0, len(trainEpochLoss), 1)
     ax1.plot(epochs, trainEpochLoss, "r", label="Training Loss")
     ax1.plot(epochs, valEpochLoss, "g", label="Validation Loss")
     if earlyStop is not None:
-        plt.scatter(
+        ax1.scatter(
             epochs[earlyStop],
             valEpochLoss[earlyStop],
             marker="x",
@@ -94,35 +96,35 @@ def plot(trainEpochLoss, trainEpochAccuracy, valEpochLoss, valEpochAccuracy, ear
             s=400,
             label="Early Stop Epoch",
         )
-    plt.xticks(ticks=np.arange(min(epochs), max(epochs) + 1, 10), fontsize=12)
-    plt.yticks(fontsize=12)
-    ax1.set_title("Loss Plots", fontsize=12.0)
-    ax1.set_xlabel("Epochs", fontsize=12.0)
-    ax1.set_ylabel("Cross Entropy Loss", fontsize=12.0)
-    ax1.legend(loc="upper right", fontsize=12.0)
-    plt.savefig(constants.save_location + "loss.eps")
-    plt.show()
 
-    fig2, ax2 = plt.subplots()
+    ax1.set_xlabel("Epochs", fontsize=12.0)
+    ax1.set_ylabel("Cross Entropy Loss", color="black", fontsize=12.0)
+    ax1.legend(loc="upper right", fontsize=12.0)
+
+    # Plotting Accuracy
     ax2.plot(epochs, trainEpochAccuracy, "r", label="Training Accuracy")
     ax2.plot(epochs, valEpochAccuracy, "g", label="Validation Accuracy")
     if earlyStop is not None:
-        plt.scatter(
+        ax2.scatter(
             epochs[earlyStop],
             valEpochAccuracy[earlyStop],
             marker="x",
-            c="g",
+            c="c",
             s=400,
             label="Early Stop Epoch",
         )
-    plt.xticks(ticks=np.arange(min(epochs), max(epochs) + 1, 10), fontsize=12)
-    plt.yticks(fontsize=12)
-    ax2.set_title("Accuracy Plots", fontsize=12.0)
+
     ax2.set_xlabel("Epochs", fontsize=12.0)
-    ax2.set_ylabel("Accuracy", fontsize=12.0)
+    ax2.set_ylabel("Accuracy", color="black", fontsize=12.0)
     ax2.legend(loc="lower right", fontsize=12.0)
-    plt.savefig(constants.save_location + "accuarcy.eps")
-    plt.ylim(0, 1)
+
+    # Adjust layout to prevent clipping of labels
+    fig.tight_layout()
+
+    # Save the combined plot
+    plt.savefig(constants.save_location + "combined_plots.eps")
+
+    # Display the combined plot
     plt.show()
 
     # Saving the losses and accuracies for further offline use
@@ -134,6 +136,7 @@ def plot(trainEpochLoss, trainEpochAccuracy, valEpochLoss, valEpochAccuracy, ear
     pd.DataFrame(valEpochAccuracy).to_csv(
         constants.save_location + "valEpochAccuracy.csv"
     )
+
 
 def train_validation_split(
     x_train, y_train, random_seed=42
@@ -357,3 +360,20 @@ def save_loss_accuracy(test_loss, test_acc, val_loss, val_acc):
     }
     with open(fn, "w") as f:
         json.dump(info, f)
+
+def digit_show(x, y):
+    with open(raw_path, "rb") as f:
+        train_images, train_labels, test_images, test_labels = pickle.load(f)
+
+    n = x_train[0]
+    util.digit_show(n, "2")
+    print(np.mean(n))
+    print(np.std(n))
+    return 1
+
+    print(f"Correct: {y}")
+    import matplotlib.pyplot as plt
+
+    plt.imshow(x.reshape(28, 28), cmap="gray")
+    plt.axis("off")  # Turn off axis labels
+    plt.show()

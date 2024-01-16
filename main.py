@@ -6,12 +6,9 @@ import util
 from constants import (
     config_dir,
     dataset_dir,
-    models_dir,
 )
 from neuralnet import NeuralNetwork
 from train import model_test, model_train, model_train_fast
-
-# install(show_locals=True)
 
 
 # TODO
@@ -39,17 +36,16 @@ def main(args):
     # Create a Neural Network object which will be our model
     model = NeuralNetwork(config)
 
-    if args.load is not None and args.save is not None:
-        raise Exception("Cannot load and save model")
+    if args.load and args.save:
+        raise Exception("Load and save flags cannot both be toggled.")
 
     if args.load:
-        path = os.path.join(models_dir, args.load + ".pkl")
-        if not os.path.exists(path):
-            raise Exception(f"File {path} does not exist.")
-
-        print(f"Loading cached model from {path}")
-        with open(path, "rb") as f:
-            model, tl, ta, vl, va = pickle.load(f)
+        if os.path.exists("saved_model.pkl"):
+            print("Loading cached model from saved_model.pkl.")
+            with open("saved_model.pkl", "rb") as f:
+                model, tl, ta, vl, va = pickle.load(f)
+        else:
+            raise Exception("File saved_model.pkl does not exist.")
     else:
         if args.save:
             path = os.path.join(models_dir, args.save + ".pkl")
@@ -114,13 +110,13 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--save",
-        type=str,
-        help="Save model with name.",
+        action="store_true",
+        help="Saves trained model as saved_model.pkl",
     )
     parser.add_argument(
         "--load",
-        type=str,
-        help="Load model with name.",
+        action="store_true",
+        help="Attempt to load model if saved_model.pkl exists.",
     )
     args = parser.parse_args()
     main(args)

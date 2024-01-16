@@ -114,7 +114,6 @@ class Layer:
         """
         Define the architecture and create placeholders.
         """
-        # np.random.seed(42)
 
         # Randomly initialize weights
         self.w: np.ndarray = 0.01 * np.random.random((in_units + 1, out_units))
