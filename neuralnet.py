@@ -122,6 +122,7 @@ class Layer:
         self.x: np.ndarray | None = None  # Save the input to forward in this
         self.a: np.ndarray | None = None  # output without activation
         self.z: np.ndarray | None = None  # Output After Activation
+        self.gradient: np.ndarray | None = None
         self.activation: Activation = activation
 
         self.dw: np.ndarray = np.zeros_like(self.w)
@@ -162,10 +163,10 @@ class Layer:
 
         # Accumulate gradient in mini batch
         # gradient = self.x.reshape((-1, 1)) @ this_delta.reshape((1, -1))
-        gradient = self.x[:, np.newaxis] * this_delta
+        self.gradient = self.x[:, np.newaxis] * this_delta
         if momentum_gamma > 0.0:
             self.dw *= momentum_gamma
-        self.dw += learning_rate * gradient
+        self.dw += learning_rate * self.gradient
 
         # Don't propagate the bias weight
         return self.w[:-1, :] @ this_delta
