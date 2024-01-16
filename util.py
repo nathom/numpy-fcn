@@ -22,7 +22,6 @@ def load_config(path):
     """
     return yaml.load(open(path, "r"), Loader=yaml.SafeLoader)
 
-
 def normalize_data(inp):
     """
     TODO
@@ -41,7 +40,6 @@ def normalize_data(inp):
     normalized_data = (inp - mean_val) / std_dev
 
     return normalized_data
-
 
 def one_hot_encoding(labels, num_classes=10):
     """
@@ -136,7 +134,6 @@ def plot(trainEpochLoss, trainEpochAccuracy, valEpochLoss, valEpochAccuracy, ear
     pd.DataFrame(valEpochAccuracy).to_csv(
         constants.save_location + "valEpochAccuracy.csv"
     )
-
 
 def train_validation_split(
     x_train, y_train, random_seed=42
