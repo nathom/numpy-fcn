@@ -1,6 +1,7 @@
 import argparse
 import os
 import pickle
+import gradient
 
 import util
 from constants import (
@@ -39,6 +40,10 @@ def main(args):
 
     if args.load and args.save:
         raise Exception("Load and save flags cannot both be toggled.")
+
+    if args.grad:
+        gradient.check_gradient(x_train, y_train, config)
+        return 1
 
     if args.load:
         path = os.path.join(models_dir, args.load + ".pkl")
@@ -119,6 +124,12 @@ if __name__ == "__main__":
         "--load",
         type=str,
         help="Attempt to load model if saved_model.pkl exists.",
+    )
+
+    parser.add_argument(
+        "--grad",
+        action="store_true",
+        help="Runs numerical approximation test.",
     )
     args = parser.parse_args()
     main(args)
