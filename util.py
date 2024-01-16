@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import yaml
+from numba import njit
 
 import constants
 from constants import save_location
@@ -23,6 +24,7 @@ def load_config(path):
     return yaml.load(open(path, "r"), Loader=yaml.SafeLoader)
 
 
+@njit
 def normalize_data(inp):
     """
     TODO
@@ -43,6 +45,7 @@ def normalize_data(inp):
     return normalized_data
 
 
+@njit
 def one_hot_encoding(labels, num_classes=10):
     """
     TODO
@@ -138,6 +141,7 @@ def plot(trainEpochLoss, trainEpochAccuracy, valEpochLoss, valEpochAccuracy, ear
     )
 
 
+@njit
 def train_validation_split(
     x_train, y_train, random_seed=42
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:

@@ -1,7 +1,5 @@
 import numpy as np
 
-from util import append_bias
-
 
 class Activation:
     """
@@ -98,7 +96,7 @@ class Activation:
         """
         Compute the gradient for ReLU here.
         """
-        return np.heaviside(x, 0)
+        return (x > 0.0) * 1
 
     def grad_output(self, x):
         """
@@ -116,7 +114,7 @@ class Layer:
         """
         Define the architecture and create placeholders.
         """
-        np.random.seed(42)
+        # np.random.seed(42)
 
         # Randomly initialize weights
         self.w: np.ndarray = 0.01 * np.random.random((in_units + 1, out_units))
@@ -140,9 +138,9 @@ class Layer:
         Compute the forward pass (activation of the weighted input) through the layer here and return it.
         """
 
-        self.x = x  # (785,)
-        self.a = x @ self.w  # (785,) * (785,10) -> (10,)
-        self.z = self.activation(self.a)
+        self.x = x  # (N,785)
+        self.a = x @ self.w  # (N,785) * (785,10) -> (N,10)
+        self.z = self.activation(self.a)  #  (N,10)
         return self.z
 
     def backward(
@@ -151,7 +149,6 @@ class Layer:
         learning_rate: float,
         momentum_gamma: float,
         regularization: float,
-        update_weights: bool,
     ) -> np.ndarray:
         assert self.a is not None
         assert self.x is not None
@@ -164,19 +161,18 @@ class Layer:
             this_delta = self.activation.backward(self.a) * next_delta
 
         # Accumulate gradient in mini batch
-        gradient = self.x.reshape((-1, 1)) @ this_delta.reshape((1, -1))
+        # gradient = self.x.reshape((-1, 1)) @ this_delta.reshape((1, -1))
+        gradient = self.x[:, np.newaxis] * this_delta
         if momentum_gamma > 0.0:
             self.dw *= momentum_gamma
         self.dw += learning_rate * gradient
 
-        if update_weights:
-            # update weights
-            self.w += self.dw
-            # reset gradient for next backprop iteration
-            self.dw = np.zeros_like(self.w)
-
         # Don't propagate the bias weight
         return self.w[:-1, :] @ this_delta
+
+    def update_weights(self):
+        self.w += self.dw
+        self.dw = np.zeros_like(self.w)
 
 
 class NeuralNetwork:
@@ -227,7 +223,7 @@ class NeuralNetwork:
         """
         output = x
         for layer in self.layers:
-            output = layer.forward(append_bias(output))
+            output = layer.forward(np.append(output, 1))
 
         self.y = output
         if targets is not None:
@@ -247,16 +243,18 @@ class NeuralNetwork:
     def output_loss(self, outputs, targets):
         return targets - outputs
 
-    def backward(self, update_weights: bool, gamma: float):
+    def backward(self, gamma: float, targets: np.ndarray):
         """
         TODO: Implement backpropagation here by calling backward method of Layers class.
         Call backward methods of individual layers.
         """
-        delta = self.output_loss(self.y, self.targets)  # (10,)
+        delta = self.output_loss(self.y, targets)  # (10,)
         for layer in reversed(self.layers):
-            delta = layer.backward(
-                delta, self.learning_rate, gamma, None, update_weights=update_weights
-            )
+            delta = layer.backward(delta, self.learning_rate, gamma, 0.0)
+
+    def update_weights(self):
+        for layer in self.layers:
+            layer.update_weights()
 
     def new_batch(self):
         """Set the accumulated gradient on all layers to 0."""

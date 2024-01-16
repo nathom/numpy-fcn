@@ -10,7 +10,7 @@ from constants import (
     models_dir,
 )
 from neuralnet import NeuralNetwork
-from train import model_test, model_train
+from train import model_test, model_train, model_train_fast
 
 # install(show_locals=True)
 
@@ -35,6 +35,8 @@ def main(args):
         raise NotImplementedError
     elif args.experiment == "multilayer":  # Rubric #8: Activation Experiments
         config_fn = "multilayer.yaml"
+    elif args.experiment == "profile":  # Rubric #8: Activation Experiments
+        config_fn = "profile.yaml"
     else:
         raise NotImplementedError
 
@@ -74,9 +76,18 @@ def main(args):
         else:
             path = None
 
-        model, tl, ta, vl, va = model_train(
-            model, x_train, y_train, x_valid, y_valid, config
-        )
+        if args.fast:
+            print(
+                "WARNING: Training in fast mode. Training loss and accuracy not recorded."
+            )
+            model, vl, va = model_train_fast(
+                model, x_train, y_train, x_valid, y_valid, config
+            )
+            tl, ta = [], []
+        else:
+            model, tl, ta, vl, va = model_train(
+                model, x_train, y_train, x_valid, y_valid, config
+            )
 
         if args.save:
             assert path is not None
@@ -113,6 +124,11 @@ if __name__ == "__main__":
         "--plot",
         action="store_true",
         help="Plot the results",
+    )
+    parser.add_argument(
+        "--fast",
+        action="store_true",
+        help="Faster training, but no plot data.",
     )
     parser.add_argument(
         "--save",
