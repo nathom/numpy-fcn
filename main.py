@@ -2,7 +2,6 @@ import argparse
 import os
 import pickle
 
-import gradient
 import util
 from constants import (
     config_dir,
@@ -19,26 +18,14 @@ from train import model_test, model_train, model_train_fast
 def main(args):
     # Read the required config
     # Create different config files for different experiments
-    if args.experiment == "test_softmax":  # Rubric #4: Softmax Regression
-        config_fn = "config_4.yaml"
-    elif (
-        args.experiment == "test_gradients"
-    ):  # Rubric #5: Numerical Approximation of Gradients
-        config_fn = "config_5.yaml"
-    elif args.experiment == "test_momentum":  # Rubric #6: Momentum Experiments
-        config_fn = "config_6.yaml"
-    elif (
-        args.experiment == "test_regularization"
-    ):  # Rubric #7: Regularization Experiments
-        raise NotImplementedError
-    elif args.experiment == "test_activation":  # Rubric #8: Activation Experiments
-        raise NotImplementedError
-    elif args.experiment == "multilayer":  # Rubric #8: Activation Experiments
-        config_fn = "multilayer.yaml"
-    elif args.experiment == "profile":  # Rubric #8: Activation Experiments
-        config_fn = "profile.yaml"
-    else:
-        raise NotImplementedError
+
+    if args.config is None:
+        raise Exception("Specify a config name to use")
+
+    if not args.config.endswith("yaml"):
+        args.config += ".yaml"
+
+    config_fn = args.config
 
     # Load the data
     x_train, y_train, x_valid, y_valid, x_test, y_test = util.load_data(
@@ -46,13 +33,8 @@ def main(args):
     )
 
     # Load the configuration from the corresponding yaml file. Specify the file path and name
-    assert config_fn is not None
     assert config_dir is not None
     config = util.load_config(os.path.join(config_dir, config_fn))
-
-    if args.experiment == "test_gradients":
-        gradient.check_gradient(x_train, y_train, config)
-        return 1
 
     # Create a Neural Network object which will be our model
     model = NeuralNetwork(config)
@@ -115,10 +97,10 @@ if __name__ == "__main__":
     # Parse the input arguments
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--experiment",
+        "--config",
         type=str,
-        default="test_momentum",
-        help="Specify the experiment that you want to run",
+        # default="test_momentum",
+        help="Specify the config that you want to run. Dont have to include .yaml extension",
     )
     parser.add_argument(
         "--plot",
