@@ -77,8 +77,11 @@ class Activation:
 
         Subtract maximum value for numerical stability
         """
-        exp_x: np.ndarray = np.exp(x - np.max(x))
-        return exp_x / exp_x.sum(axis=0, keepdims=True)
+        if len(x.shape) == 1:
+            exp_x: np.ndarray = np.exp(x - np.max(x))
+            return exp_x / exp_x.sum(axis=0, keepdims=True)
+        exp_x: np.ndarray = np.exp(x - np.max(x, axis=1, keepdims=True))
+        return exp_x / exp_x.sum(axis=1, keepdims=True)
 
     def grad_sigmoid(self, x):
         """
@@ -138,9 +141,19 @@ class Layer:
         Compute the forward pass (activation of the weighted input) through the layer here and return it.
         """
 
-        self.x = x  # (N,785)
-        self.a = x @ self.w  # (N,785) * (785,10) -> (N,10)
+        self.x = x  # (785)
+        self.a = x @ self.w  # (785) * (785,10) -> (10,)
         self.z = self.activation(self.a)  #  (N,10)
+
+        return self.z
+
+    def forward_batch(self, x_batch: np.ndarray) -> np.ndarray:
+        # x_batch (B,785)
+        # w       (785,10)
+        # return  (B,10)
+        self.x = x_batch
+        self.a = x_batch @ self.w
+        self.z = self.activation(self.a)
         return self.z
 
     def backward(
@@ -161,7 +174,6 @@ class Layer:
             this_delta = self.activation.backward(self.a) * next_delta
 
         # Accumulate gradient in mini batch
-        # gradient = self.x.reshape((-1, 1)) @ this_delta.reshape((1, -1))
         self.gradient = self.x[:, np.newaxis] * this_delta
         if momentum_gamma > 0.0:
             self.dw *= momentum_gamma
@@ -170,9 +182,29 @@ class Layer:
         # Don't propagate the bias weight
         return self.w[:-1, :] @ this_delta
 
+    def backward_batch(
+        self, next_delta: np.ndarray, learning_rate, momentum_gamma, regularization
+    ):
+        assert self.a is not None
+        assert self.x is not None
+
+        if self.activation.activation_type == "output":
+            # output delta passed in by caller
+            # see NeuralNetwork.backward()
+            this_delta = next_delta
+        else:
+            this_delta = self.activation.backward(self.a) * next_delta
+
+        # Accumulate gradient in mini batch
+
+        self.gradient = self.x.T @ this_delta
+        if momentum_gamma > 0.0:
+            self.dw *= momentum_gamma
+        self.dw += learning_rate * self.gradient
+        return this_delta @ self.w[:-1, :].T
+
     def update_weights(self):
         self.w += self.dw
-        self.dw = np.zeros_like(self.w)
 
 
 class NeuralNetwork:
@@ -231,7 +263,24 @@ class NeuralNetwork:
             return float(self.loss(output, targets))
         return None
 
-    def loss(self, outputs, targets):
+    def forward_batch(self, x_batch):
+        output = x_batch
+        for layer in self.layers:
+            output = np.column_stack((output, np.ones((output.shape[0],))))
+            output = layer.forward_batch(output)
+
+        self.y = output
+
+    def current_loss(self, targets: np.ndarray) -> np.ndarray:
+        """Return the loss for the current y."""
+        epsilon = 1e-15
+        # avoid log(0.0)
+        assert self.y is not None
+        outputs = np.clip(self.y, epsilon, 1 - epsilon)
+        return -np.sum(targets * np.log(outputs), axis=1)
+
+    @staticmethod
+    def loss(outputs, targets):
         """
         Compute the categorical cross-entropy loss and return it.
         """
@@ -243,20 +292,21 @@ class NeuralNetwork:
     def output_loss(self, outputs, targets):
         return targets - outputs
 
+    def num_correct(self, targets: np.ndarray):
+        assert self.y is not None
+        corr = np.argmax(self.y, axis=1) == np.argmax(targets, axis=1)
+        return corr.sum()
+
     def backward(self, gamma: float, targets: np.ndarray):
-        """
-        TODO: Implement backpropagation here by calling backward method of Layers class.
-        Call backward methods of individual layers.
-        """
         delta = self.output_loss(self.y, targets)  # (10,)
         for layer in reversed(self.layers):
             delta = layer.backward(delta, self.learning_rate, gamma, 0.0)
 
+    def backward_batch(self, gamma, targets):
+        delta = self.output_loss(self.y, targets)
+        for layer in reversed(self.layers):
+            delta = layer.backward_batch(delta, self.learning_rate, gamma, 0.0)
+
     def update_weights(self):
         for layer in self.layers:
             layer.update_weights()
-
-    def new_batch(self):
-        """Set the accumulated gradient on all layers to 0."""
-        for layer in self.layers:
-            layer.dw = np.zeros_like(layer.w)
