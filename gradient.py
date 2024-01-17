@@ -40,11 +40,13 @@ def check_grad(model, x_train, y_train):
         # Obtain actual gradients
         delta = model.output_loss(model.y, model.targets)  # (10,)
 
-        delta = model.layers[1].backward(delta, model.learning_rate, momentum_gamma=0, regularization=None)
+        delta = model.layers[1].backward(delta, model.learning_rate,
+                                         momentum_gamma=0, l1=0, l2=0)
         if layer == 1:
             grad = - model.layers[1].gradient[i][j]
 
-        delta = model.layers[0].backward(delta, model.learning_rate, momentum_gamma=0, regularization=None)
+        delta = model.layers[0].backward(delta, model.learning_rate,
+                                         momentum_gamma=0, l1=0, l2=0)
         if layer == 0:
             grad = - model.layers[0].gradient[i][j]
 

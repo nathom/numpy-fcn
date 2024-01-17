@@ -191,9 +191,8 @@ class Layer:
         return self.w[:-1, :] @ this_delta
 
     def backward_batch(
-        self, next_delta: np.ndarray, learning_rate, momentum_gamma, regularization, l1: float,
-        l2: float,
-    ):
+        self, next_delta: np.ndarray, learning_rate, momentum_gamma, l1: float,
+        l2: float):
         assert self.a is not None
         assert self.x is not None
 
@@ -207,10 +206,10 @@ class Layer:
         # Accumulate gradient in mini batch
         
         # L1 Regularization
-        self.gradient += l1
+        # self.gradient += l1
 
         # L2 Regularization
-        self.gradient += 2 * l2 * self.w
+        # self.gradient += 2 * l2 * self.w
 
         self.gradient = self.x.T @ this_delta
         if momentum_gamma > 0.0:
@@ -317,10 +316,10 @@ class NeuralNetwork:
         for layer in reversed(self.layers):
             delta = layer.backward(delta, self.learning_rate, gamma, l1, l2)
 
-    def backward_batch(self, gamma, targets):
+    def backward_batch(self, l1: float, l2: float, gamma, targets):
         delta = self.output_loss(self.y, targets)
         for layer in reversed(self.layers):
-            delta = layer.backward_batch(delta, self.learning_rate, gamma, 0.0)
+            delta = layer.backward_batch(delta, self.learning_rate, gamma, l1, l2)
 
     def update_weights(self):
         for layer in self.layers:

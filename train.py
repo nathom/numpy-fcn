@@ -45,6 +45,9 @@ def model_train(
     batch_size = config["batch_size"]
     epochs = config["epochs"]
     uses_momentum = config["momentum"]
+    l1=config["L1_penalty"]
+    l2=config["L2_penalty"]
+
     if uses_momentum:
         gamma = config["momentum_gamma"]
     else:
@@ -62,7 +65,7 @@ def model_train(
     # batch_size = 128
     # patience_limit = 1
     print(
-        f"Running with {layers = } {epochs = }, {batch_size = }, {patience_limit = }, {gamma = }"
+        f"Running with {layers = }, {epochs = }, {batch_size = }, {patience_limit = }, {gamma = }, {l1 = }, {l2 = }"
     )
     with tqdm(total=epochs, unit="epoch") as bar:
         for _ in range(epochs):
@@ -78,7 +81,10 @@ def model_train(
                 losses = model.current_loss(y_train_batch)
                 train_loss += losses.sum()
                 correct += model.num_correct(y_train_batch)
-                model.backward_batch(config["L1_penalty"], config["L2_penalty"], gamma, y_train_batch)
+                model.backward_batch(gamma=gamma,
+                                     targets=y_train_batch,
+                                     l1=l1,
+                                     l2=l2)
                 model.update_weights()
 
             n = len(x_train)
