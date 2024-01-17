@@ -78,7 +78,7 @@ def model_train(
                 losses = model.current_loss(y_train_batch)
                 train_loss += losses.sum()
                 correct += model.num_correct(y_train_batch)
-                model.backward_batch(gamma, y_train_batch)
+                model.backward_batch(config["L1_penalty"], config["L2_penalty"], gamma, y_train_batch)
                 model.update_weights()
 
             n = len(x_train)

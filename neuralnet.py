@@ -161,7 +161,8 @@ class Layer:
         next_delta: np.ndarray,  # (N,)
         learning_rate: float,
         momentum_gamma: float,
-        regularization: float,
+        l1: float,
+        l2: float,
     ) -> np.ndarray:
         assert self.a is not None
         assert self.x is not None
@@ -175,6 +176,13 @@ class Layer:
 
         # Accumulate gradient in mini batch
         self.gradient = self.x[:, np.newaxis] * this_delta
+
+        # L1 Regularization
+        self.gradient += l1
+
+        # L2 Regularization
+        self.gradient += 2 * l2 * self.w
+
         if momentum_gamma > 0.0:
             self.dw *= momentum_gamma
         self.dw += learning_rate * self.gradient
@@ -183,7 +191,8 @@ class Layer:
         return self.w[:-1, :] @ this_delta
 
     def backward_batch(
-        self, next_delta: np.ndarray, learning_rate, momentum_gamma, regularization
+        self, next_delta: np.ndarray, learning_rate, momentum_gamma, regularization, l1: float,
+        l2: float,
     ):
         assert self.a is not None
         assert self.x is not None
@@ -196,6 +205,12 @@ class Layer:
             this_delta = self.activation.backward(self.a) * next_delta
 
         # Accumulate gradient in mini batch
+        
+        # L1 Regularization
+        self.gradient += l1
+
+        # L2 Regularization
+        self.gradient += 2 * l2 * self.w
 
         self.gradient = self.x.T @ this_delta
         if momentum_gamma > 0.0:
@@ -297,10 +312,10 @@ class NeuralNetwork:
         corr = np.argmax(self.y, axis=1) == np.argmax(targets, axis=1)
         return corr.sum()
 
-    def backward(self, gamma: float, targets: np.ndarray):
+    def backward(self, l1: float, l2: float, gamma: float, targets: np.ndarray):
         delta = self.output_loss(self.y, targets)  # (10,)
         for layer in reversed(self.layers):
-            delta = layer.backward(delta, self.learning_rate, gamma, 0.0)
+            delta = layer.backward(delta, self.learning_rate, gamma, l1, l2)
 
     def backward_batch(self, gamma, targets):
         delta = self.output_loss(self.y, targets)
