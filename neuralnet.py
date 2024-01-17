@@ -148,7 +148,8 @@ class Layer:
         next_delta: np.ndarray,  # (N,)
         learning_rate: float,
         momentum_gamma: float,
-        regularization: float,
+        l1: float,
+        l2: float,
     ) -> np.ndarray:
         assert self.a is not None
         assert self.x is not None
@@ -163,6 +164,13 @@ class Layer:
         # Accumulate gradient in mini batch
         # gradient = self.x.reshape((-1, 1)) @ this_delta.reshape((1, -1))
         self.gradient = self.x[:, np.newaxis] * this_delta
+
+        # L1 Regularization
+        self.gradient += l1
+
+        # L2 Regularization
+        self.gradient += 2 * l2 * self.w
+
         if momentum_gamma > 0.0:
             self.dw *= momentum_gamma
         self.dw += learning_rate * self.gradient
@@ -243,14 +251,14 @@ class NeuralNetwork:
     def output_loss(self, outputs, targets):
         return targets - outputs
 
-    def backward(self, gamma: float, targets: np.ndarray):
+    def backward(self, l1: float, l2: float, gamma: float, targets: np.ndarray):
         """
         TODO: Implement backpropagation here by calling backward method of Layers class.
         Call backward methods of individual layers.
         """
         delta = self.output_loss(self.y, targets)  # (10,)
         for layer in reversed(self.layers):
-            delta = layer.backward(delta, self.learning_rate, gamma, 0.0)
+            delta = layer.backward(delta, self.learning_rate, gamma, l1, l2)
 
     def update_weights(self):
         for layer in self.layers:

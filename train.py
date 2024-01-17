@@ -92,7 +92,7 @@ def model_train(
                     # otherwise only update the gradient accumulator
                     # See SGD (Algorithm 1) on homework
                     # u = i == x_train_batch.shape[0] - 1
-                    model.backward(gamma, y)
+                    model.backward(config["L1_penalty"], config["L2_penalty"], gamma, y)
                 model.update_weights()
 
             epoch_loss = train_loss / n
