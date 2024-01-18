@@ -1,3 +1,31 @@
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1.0\textwidth]{./images/activation_tanh.png}
+	\caption{Accuracy and Loss using $\tanh(x)$ activation}
+	\label{fig:tanh}
+\end{figure}
+
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1.0\textwidth]{./images/activation_sigmoid.png}
+	\caption{Accuracy and Loss using $\texttt{sigmoid}(x)$ activation}
+	\label{fig:sigmoid}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1.0\textwidth]{./images/activation_relu.png}
+	\caption{Accuracy and Loss using $\texttt{ReLU}(x)$ activation, $\alpha = 0.001$}
+	\label{fig:relu}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1.0\textwidth]{./images/activation_relu2.png}
+	\caption{Accuracy and Loss using $\texttt{ReLU}(x)$ activation, $\alpha = 0.0001$}
+	\label{fig:relu2}
+\end{figure}
 \section{Activation Experiments}
 
 \subsection{Background}
@@ -76,42 +104,14 @@ L1 and L2 normalization are not used.
 
 \subsubsection{Tanh}
 
-\begin{figure}[!ht]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/activation_tanh.png}
-	\caption{Accuracy and Loss using $\tanh(x)$ activation}
-	\label{fig:tanh}
-\end{figure}
-
 We get test accuracy of $97.15\%$ and a stopping epoch of $10$\cref{fig:tanh}.
 
 \subsubsection{Sigmoid}
 
 
-\begin{figure}[!ht]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/activation_sigmoid.png}
-	\caption{Accuracy and Loss using $\texttt{sigmoid}(x)$ activation}
-	\label{fig:sigmoid}
-\end{figure}
-
 We get test accuracy of $97.66\%$ and a stopping epoch of $19$\cref{fig:sigmoid}.
 
 \subsubsection{ReLU}
-
-\begin{figure}[!ht]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/activation_relu.png}
-	\caption{Accuracy and Loss using $\texttt{ReLU}(x)$ activation}
-	\label{fig:relu}
-\end{figure}
-
-\begin{figure}[!ht]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/activation_relu2.png}
-	\caption{Accuracy and Loss using $\texttt{ReLU}(x)$ activation}
-	\label{fig:relu2}
-\end{figure}
 
 We get test accuracy of $95.61\%$ and a stopping epoch of $5$\cref{fig:relu}. The relatively
 low performance and early stopping epoch suggests the learning rate is too high. If we set

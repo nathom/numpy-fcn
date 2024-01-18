@@ -1,3 +1,11 @@
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=0.25\textwidth]{./images/mnist_digit.png}
+	\caption{Sample MNIST Digit (5)}
+	\label{fig:example}
+\end{figure}
+
+
 \section{Data Loading}
 The dataset we will be using to train a multi-layer neural network is the
 MNIST dataset. The {MNIST}\footnote{\textit{Modified} National Institute of
@@ -25,16 +33,7 @@ normalization of the image where each value will range between -1 and 1 (unit
 variance) and have mean 0.
 
 \subsection{Mean and Standard Deviation}
-Consider the above image from the MNIST dataset:
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.25\textwidth]{./images/mnist_digit.png}
-	\caption{Sample MNIST Digit}
-	\label{fig:example}
-\end{figure}
-
-Its (unnormalized) vector representation can be written as
+Consider an image of the digit $5$\cref{fig:example}. Its vector representation is
 
 \begin{equation*}
 	\vec{x}^{(n)}  =
@@ -47,7 +46,7 @@ Its (unnormalized) vector representation can be written as
 \end{equation*}
 
 where each of the values in $\vec{x}^{(784)}$ is some value between 0 for black
-and 255.0 for white. Its mean ($\mu$) and standard deviation ($\sigma$) can be
+and 255 for white. Its mean ($\mu$) and standard deviation ($\sigma$) can be
 obtained by
 
 \begin{equation*}
