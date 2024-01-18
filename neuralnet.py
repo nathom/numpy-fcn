@@ -17,9 +17,6 @@ class Activation:
         # Type of non-linear activation.
         self.activation_type: str = activation_type
 
-        # Placeholder for input. This can be used for computing gradients.
-        self.x: np.ndarray | None = None
-
     def __call__(self, z):
         """
         This method allows your instances to be callable.
@@ -77,9 +74,6 @@ class Activation:
 
         Subtract maximum value for numerical stability
         """
-        if len(x.shape) == 1:
-            exp_x: np.ndarray = np.exp(x - np.max(x))
-            return exp_x / exp_x.sum(axis=0, keepdims=True)
         exp_x: np.ndarray = np.exp(x - np.max(x, axis=1, keepdims=True))
         return exp_x / exp_x.sum(axis=1, keepdims=True)
 
@@ -113,6 +107,8 @@ class Layer:
     This class implements Fully Connected layers for your neural network.
     """
 
+    __slots__ = ["w", "x", "a", "activation", "dw"]
+
     def __init__(self, in_units, out_units, activation):
         """
         Define the architecture and create placeholders.
@@ -123,18 +119,9 @@ class Layer:
 
         self.x: np.ndarray | None = None  # Save the input to forward in this
         self.a: np.ndarray | None = None  # output without activation
-        self.z: np.ndarray | None = None  # Output After Activation
-        self.gradient: np.ndarray | None = None
         self.activation: Activation = activation
 
         self.dw: np.ndarray = np.zeros_like(self.w)
-        self.velocity: np.ndarray = np.zeros_like(self.w)
-
-    def __call__(self, x):
-        """
-        Make layer callable.
-        """
-        return self.forward(x)
 
     def forward(self, x) -> np.ndarray:
         """
@@ -143,9 +130,9 @@ class Layer:
 
         self.x = x  # (785)
         self.a = x @ self.w  # (785) * (785,10) -> (10,)
-        self.z = self.activation(self.a)  #  (N,10)
+        z = self.activation(self.a)  #  (N,10)
 
-        return self.z
+        return z
 
     def forward_batch(self, x_batch: np.ndarray) -> np.ndarray:
         # x_batch (B,785)
@@ -153,46 +140,17 @@ class Layer:
         # return  (B,10)
         self.x = x_batch
         self.a = x_batch @ self.w
-        self.z = self.activation(self.a)
-        return self.z
-
-    def backward(
-        self,
-        next_delta: np.ndarray,  # (N,)
-        learning_rate: float,
-        momentum_gamma: float,
-        l1: float,
-        l2: float,
-    ) -> np.ndarray:
-        assert self.a is not None
-        assert self.x is not None
-
-        if self.activation.activation_type == "output":
-            # output delta passed in by caller
-            # see NeuralNetwork.backward()
-            this_delta = next_delta
-        else:
-            this_delta = self.activation.backward(self.a) * next_delta
-
-        # Accumulate gradient in mini batch
-        self.gradient = self.x[:, np.newaxis] * this_delta
-
-        # L1 Regularization
-        self.gradient += l1
-
-        # L2 Regularization
-        self.gradient += 2 * l2 * self.w
-
-        if momentum_gamma > 0.0:
-            self.dw *= momentum_gamma
-        self.dw += learning_rate * self.gradient
-
-        # Don't propagate the bias weight
-        return self.w[:-1, :] @ this_delta
+        z = self.activation(self.a)
+        return z
 
     def backward_batch(
-        self, next_delta: np.ndarray, learning_rate, momentum_gamma, l1: float,
-        l2: float):
+        self,
+        next_delta: np.ndarray,
+        learning_rate,
+        momentum_gamma,
+        l1: float,
+        l2: float,
+    ):
         assert self.a is not None
         assert self.x is not None
 
@@ -203,19 +161,23 @@ class Layer:
         else:
             this_delta = self.activation.backward(self.a) * next_delta
 
-        # Accumulate gradient in mini batch
-        
-        # L1 Regularization
-        # self.gradient += l1
-
-        # L2 Regularization
-        # self.gradient += 2 * l2 * self.w
-
-        self.gradient = self.x.T @ this_delta
+        gradient = self.x.T @ this_delta - l1 - l2 * self.w
         if momentum_gamma > 0.0:
             self.dw *= momentum_gamma
-        self.dw += learning_rate * self.gradient
+        self.dw += learning_rate * gradient
         return this_delta @ self.w[:-1, :].T
+
+    def get_gradient(self, next_delta):
+        assert self.x is not None
+        assert self.a is not None
+
+        if self.activation.activation_type == "output":
+            # output delta passed in by caller
+            # see NeuralNetwork.backward()
+            this_delta = next_delta
+        else:
+            this_delta = self.activation.backward(self.a) * next_delta
+        return self.x.T @ this_delta
 
     def update_weights(self):
         self.w += self.dw
@@ -226,20 +188,21 @@ class NeuralNetwork:
     Create a Neural Network specified by the network configuration mentioned in the config yaml file.
     """
 
+    __slots__ = ["layers", "x", "y", "learning_rate"]
+
     def __init__(self, config):
         """
         Create the Neural Network using config.
         """
         self.layers: list[Layer] = []  # Store all layers in this list.
-        self.num_layers = len(config["layer_specs"]) - 1  # Set num layers here
+        num_layers = len(config["layer_specs"]) - 1  # Set num layers here
         self.x = None  # Save the input to forward in this
         self.y = None  # For saving the output vector of the model
-        self.targets = None  # For saving the targets
         self.learning_rate: float = config["learning_rate"]
 
         # Add layers specified by layer_specs.
-        for i in range(self.num_layers):
-            if i < self.num_layers - 1:
+        for i in range(num_layers):
+            if i < num_layers - 1:
                 self.layers.append(
                     Layer(
                         config["layer_specs"][i],
@@ -247,7 +210,7 @@ class NeuralNetwork:
                         Activation(config["activation"]),
                     )
                 )
-            elif i == self.num_layers - 1:
+            elif i == num_layers - 1:
                 self.layers.append(
                     Layer(
                         config["layer_specs"][i],
@@ -255,27 +218,6 @@ class NeuralNetwork:
                         Activation("output"),
                     )
                 )
-
-    def __call__(self, x, targets=None):
-        """
-        Make NeuralNetwork callable.
-        """
-        return self.forward(x, targets)
-
-    def forward(self, x, targets=None) -> float | None:
-        """
-        TODO: Compute forward pass through all the layers in the network and return the loss.
-        If targets are provided, return loss and accuracy/number of correct predictions as well.
-        """
-        output = x
-        for layer in self.layers:
-            output = layer.forward(np.append(output, 1))
-
-        self.y = output
-        if targets is not None:
-            self.targets = targets
-            return float(self.loss(output, targets))
-        return None
 
     def forward_batch(self, x_batch):
         output = x_batch
@@ -293,16 +235,6 @@ class NeuralNetwork:
         outputs = np.clip(self.y, epsilon, 1 - epsilon)
         return -np.sum(targets * np.log(outputs), axis=1)
 
-    @staticmethod
-    def loss(outputs, targets):
-        """
-        Compute the categorical cross-entropy loss and return it.
-        """
-        epsilon = 1e-15
-        # avoid log(0.0)
-        outputs = np.clip(outputs, epsilon, 1 - epsilon)
-        return -np.sum(targets * np.log(outputs))
-
     def output_loss(self, outputs, targets):
         return targets - outputs
 
@@ -310,11 +242,6 @@ class NeuralNetwork:
         assert self.y is not None
         corr = np.argmax(self.y, axis=1) == np.argmax(targets, axis=1)
         return corr.sum()
-
-    def backward(self, l1: float, l2: float, gamma: float, targets: np.ndarray):
-        delta = self.output_loss(self.y, targets)  # (10,)
-        for layer in reversed(self.layers):
-            delta = layer.backward(delta, self.learning_rate, gamma, l1, l2)
 
     def backward_batch(self, l1: float, l2: float, gamma, targets):
         delta = self.output_loss(self.y, targets)

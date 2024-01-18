@@ -45,8 +45,8 @@ def model_train(
     batch_size = config["batch_size"]
     epochs = config["epochs"]
     uses_momentum = config["momentum"]
-    l1=config["L1_penalty"]
-    l2=config["L2_penalty"]
+    l1 = config["L1_penalty"]
+    l2 = config["L2_penalty"]
 
     if uses_momentum:
         gamma = config["momentum_gamma"]
@@ -81,10 +81,7 @@ def model_train(
                 losses = model.current_loss(y_train_batch)
                 train_loss += losses.sum()
                 correct += model.num_correct(y_train_batch)
-                model.backward_batch(gamma=gamma,
-                                     targets=y_train_batch,
-                                     l1=l1,
-                                     l2=l2)
+                model.backward_batch(gamma=gamma, targets=y_train_batch, l1=l1, l2=l2)
                 model.update_weights()
 
             n = len(x_train)

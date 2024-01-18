@@ -1,8 +1,8 @@
 import argparse
 import os
 import pickle
-import gradient
 
+import gradient
 import util
 from constants import (
     config_dir,
@@ -66,6 +66,11 @@ def main(args):
         )
 
         if args.save:
+            for layer in model.layers:
+                del layer.a
+                del layer.x
+                del layer.dw
+
             assert path is not None
             # Save cached model
             with open(path, "wb") as file:
@@ -77,8 +82,12 @@ def main(args):
     util.save_loss_accuracy(tl, ta, vl, va)
 
     if args.plot:
-        # util.plot(tl, ta, vl, va, len(tl) - 1)
-        util.plot(tl, ta, vl, va, None)
+        # use correct config for early stop X on plot
+        if config["early_stop"]:
+            es = len(tl) - 1
+        else:
+            es = None
+        util.plot(tl, ta, vl, va, es)
 
     # test the model
     test_acc, test_loss = model_test(model, x_test, y_test)
