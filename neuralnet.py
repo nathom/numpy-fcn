@@ -74,9 +74,6 @@ class Activation:
 
         Subtract maximum value for numerical stability
         """
-        if len(x.shape) == 1:
-            exp_x: np.ndarray = np.exp(x - np.max(x))
-            return exp_x / exp_x.sum(axis=0, keepdims=True)
         exp_x: np.ndarray = np.exp(x - np.max(x, axis=1, keepdims=True))
         return exp_x / exp_x.sum(axis=1, keepdims=True)
 
@@ -126,23 +123,6 @@ class Layer:
 
         self.dw: np.ndarray = np.zeros_like(self.w)
 
-    def __call__(self, x):
-        """
-        Make layer callable.
-        """
-        return self.forward(x)
-
-    def forward(self, x) -> np.ndarray:
-        """
-        Compute the forward pass (activation of the weighted input) through the layer here and return it.
-        """
-
-        self.x = x  # (785)
-        self.a = x @ self.w  # (785) * (785,10) -> (10,)
-        z = self.activation(self.a)  #  (N,10)
-
-        return z
-
     def forward_batch(self, x_batch: np.ndarray) -> np.ndarray:
         # x_batch (B,785)
         # w       (785,10)
@@ -152,39 +132,6 @@ class Layer:
         z = self.activation(self.a)
         return z
 
-    def backward(
-        self,
-        next_delta: np.ndarray,  # (N,)
-        learning_rate: float,
-        momentum_gamma: float,
-        l1: float,
-        l2: float,
-    ) -> np.ndarray:
-        assert self.a is not None
-        assert self.x is not None
-
-        if self.activation.activation_type == "output":
-            # output delta passed in by caller
-            # see NeuralNetwork.backward()
-            this_delta = next_delta
-        else:
-            this_delta = self.activation.backward(self.a) * next_delta
-
-        # Accumulate gradient in mini batch
-        gradient = self.x[:, np.newaxis] * this_delta
-
-        # L1 Regularization
-        gradient += l1
-
-        # L2 Regularization
-        gradient += 2 * l2 * self.w
-
-        if momentum_gamma > 0.0:
-            self.dw *= momentum_gamma
-        self.dw += learning_rate * gradient
-
-        # Don't propagate the bias weight
-        return self.w[:-1, :] @ this_delta
 
     def backward_batch(
         self,
@@ -204,15 +151,7 @@ class Layer:
         else:
             this_delta = self.activation.backward(self.a) * next_delta
 
-        # Accumulate gradient in mini batch
-
-        # L1 Regularization
-        # self.gradient += l1
-
-        # L2 Regularization
-        # self.gradient += 2 * l2 * self.w
-
-        gradient = self.x.T @ this_delta
+        gradient = self.x.T @ this_delta - l1 - l2 * self.w
         if momentum_gamma > 0.0:
             self.dw *= momentum_gamma
         self.dw += learning_rate * gradient
@@ -270,17 +209,6 @@ class NeuralNetwork:
                     )
                 )
 
-    def forward(self, x):
-        """
-        TODO: Compute forward pass through all the layers in the network and return the loss.
-        If targets are provided, return loss and accuracy/number of correct predictions as well.
-        """
-        output = x
-        for layer in self.layers:
-            output = layer.forward(np.append(output, 1))
-
-        self.y = output
-
     def forward_batch(self, x_batch):
         output = x_batch
         for layer in self.layers:
@@ -297,16 +225,6 @@ class NeuralNetwork:
         outputs = np.clip(self.y, epsilon, 1 - epsilon)
         return -np.sum(targets * np.log(outputs), axis=1)
 
-    @staticmethod
-    def loss(outputs, targets):
-        """
-        Compute the categorical cross-entropy loss and return it.
-        """
-        epsilon = 1e-15
-        # avoid log(0.0)
-        outputs = np.clip(outputs, epsilon, 1 - epsilon)
-        return -np.sum(targets * np.log(outputs))
-
     def output_loss(self, outputs, targets):
         return targets - outputs
 
@@ -314,11 +232,6 @@ class NeuralNetwork:
         assert self.y is not None
         corr = np.argmax(self.y, axis=1) == np.argmax(targets, axis=1)
         return corr.sum()
-
-    def backward(self, l1: float, l2: float, gamma: float, targets: np.ndarray):
-        delta = self.output_loss(self.y, targets)  # (10,)
-        for layer in reversed(self.layers):
-            delta = layer.backward(delta, self.learning_rate, gamma, l1, l2)
 
     def backward_batch(self, l1: float, l2: float, gamma, targets):
         delta = self.output_loss(self.y, targets)

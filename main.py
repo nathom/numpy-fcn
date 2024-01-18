@@ -66,6 +66,11 @@ def main(args):
         )
 
         if args.save:
+            for layer in model.layers:
+                del layer.a
+                del layer.x
+                del layer.dw
+
             assert path is not None
             # Save cached model
             with open(path, "wb") as file:
