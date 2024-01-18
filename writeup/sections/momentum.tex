@@ -6,97 +6,84 @@ We now consider a new network with a 785 neuron input layer, a 128 neuron
 hidden layer, and a 10 neuron output layer. The hidden layer is activated by
 $\tanh(\mathbf x)$ and the output with softmax. We are training for 100 epochs.
 
-Next, we implement momentum, which inserts inertia into the movement of the weights.
-Instead of the weights being updated after each batch by
-
-\begin{align*}
-	w_{t + 1} = w_t - \alpha \sum_{n = \text{start}}^{end} \nabla E^{(n)}(w)
-\end{align*}
-
-we introduce the following \textit{velocity} term $v$.
-
-\begin{align*}
-	v_n = \gamma v_{n-1} - \alpha \nabla E^{(n)}(w)
-\end{align*}
-
-which is related to the weight update rule by
-
-\begin{align*}
-	w_{t+1} = w_t + v_B
-\end{align*}
-
-
-where $B$ is the batch size.
-
-Along with momentum, we implement early stopping. This technique allows us
-to stop training once performance stagnates on the validation set.
-
+We introduce the concept of \textit{momentum}, which factors in the value of the
+previous gradient into the current $\Delta$, which is the amount we adjust the weights by.
+The modified SGD algorithm includes a hyperparameter $\gamma$, which determines the strength
+of the momentum.
 
 \begin{algorithm}
-	\caption{Neural Network Training with Early Stopping}
+	\caption{Stochastic Gradient Descent with Momentum}
 	\begin{algorithmic}
-		\State $TODO w \gets 0$
-		% \For{$t = 1$ to $M$}
-		% \State Randomize the order of the indices into the training set
-		% \For{$j = 1$ to $N$ in steps of B}
-		% \State start = $j$
-		% \State end = $j$ + B
-		% \State $w_{t + 1} = w_t - \alpha \sum_{n = \text{start}}^{end} \nabla
-		% 	E^{(n)}(w) $
-		% \EndFor
-		% \EndFor
+		\State $w \gets 0$
+		\For{$t = 1$ to $M$}
+		\State Randomize the order of the indices into the training set
+		\State $\Delta_{0} = \mathbf 0$
+		\For{$j = 1$ to $N$ in steps of B}
+		\State start = $j$
+		\State end = $j$ + B
+		\State $\Delta_{j+B} = \sum_{n = \text{start}}^{end} \nabla E^{(n)}(w)$
+		\State $w_{t + 1} = w_t - (\alpha \Delta_{j+B} + \gamma \Delta_{j})$
+		\EndFor
+		\EndFor
 	\end{algorithmic}
 \end{algorithm}
 
 
+Along with momentum, we implement \textit{early stopping}. This technique allows us
+to stop training once performance stagnates on the validation set. Once  we reach
+$E$ consecutive epochs where the validation loss is lower than its highest value, we
+abort training and keep the weights with the lowest validation loss.
+
+
 \subsection{Performance}
 
-Without momentum, our training and validation plots look like this
-
-
-\begin{align*}
-	TODO
-\end{align*}
-
-Adding momentum, with $\gamma = 0.9$, our plots now look like this
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics[width=1.0\textwidth]{./images/accuracy_momentum.png}
-	\caption{Training/Validation accuracy with momentum over 100 Epochs}
+	\includegraphics[width=1.0\textwidth]{./images/no_momentum_no_early_stop.png}
+	\caption{Accuracy and Loss without momentum or early stopping}
+	\label{fig:no_momentum_no_early_stop}
+\end{figure}
+\begin{figure}[!ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{./images/momentum_no_early_stop.png}
+	\caption{Accuracy and Loss with momentum and without early stopping}
+	\label{fig:momentum_no_early_stop}
 \end{figure}
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics[width=1.0\textwidth]{./images/loss_momentum.png}
-	\caption{Training/Validation loss with momentum over 100 Epochs}
+	\includegraphics[width=1.0\textwidth]{./images/early_stop_no_momentum.png}
+	\caption{Accuracy and Loss with early stopping and without momentum}
+	\label{fig:early_stop_no_momentum}
 \end{figure}
 
-This model scores $96.64\%$ on the test set.
-
-
-Next, we implement early stopping. We saw that 63 epochs were sufficient
-for our training.
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics[width=1.0\textwidth]{./images/accuracy_momentum_early_stop.png}
-	\caption{Training/Validation accuracy with momentum and early stopping}
+	\includegraphics[width=1.0\textwidth]{./images/momentum_early_stop.png}
+	\caption{Accuracy and Loss with early stopping and momentum}
+	\label{fig:momentum_early_stop}
 \end{figure}
 
-\begin{figure}[!ht]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/loss_momentum_early_stop.png}
-	\caption{Training/Validation loss with momentum and early stopping}
-\end{figure}
+Our initial performance, with $\alpha = 0.001$, resulted in test accuracy of $97.68\%$\cref{fig:no_momentum_no_early_stop}.
 
-This model scores $96.56\%$ on the test set.
+
+Adding momentum, with $\gamma = 0.9$, resulted in a slightly worse test accuracy of $96.88\%$\cref{fig:momentum_no_early_stop}.
+
+If we have early stopping, with $E=3$, but no momentum we get a test accuracy of $97.77\%$\cref{fig:early_stop_no_momentum}.
+
+If we have both momentum and early stopping, with the same hyperparameters specified above,
+we get a test accuracy of $96.62\%$\cref{fig:momentum_early_stop}.
+
 
 \subsection{Observations}
 
-Momentum helps to smooth out noise in the gradients, especially when there are hidden layers. We also found
-in testing that calculating $v$ within the batch performed significantly better than calculating $v$ after each
-batch.
+The test accuracy and the plots suggest that momentum accelerates model convergence.
+Comparing the two plots that used early stopping, we see that only $7$ epochs were required
+with momentum but $26$ were required without. It does come with a slight penalty in model performance,
+however. We believe that this penalty is worth it, when accounting for the improved time and power
+usage of training.
 
-Early stopping is an excellent way to detect convergence, and saved us considerable training time. It also gives
-an objective measure how many epochs are necessary for future training given a value of $\alpha$.
+Early stopping is an excellent  technique to improve training times with the minor drawback of increased memory usage
+since an extra cache of the parameters must be stored. For small models, this is indispensible.
