@@ -1,7 +1,8 @@
-import numpy as np
 import copy
 
-from neuralnet import NeuralNetwork
+import numpy as np
+
+from neural_network import NeuralNetwork
 
 
 def check_grad(model, x_train, y_train):
@@ -40,22 +41,28 @@ def check_grad(model, x_train, y_train):
         # Obtain actual gradients
         delta = model.output_loss(model.y, model.targets)  # (10,)
 
-        delta = model.layers[1].backward(delta, model.learning_rate,
-                                         momentum_gamma=0, l1=0, l2=0)
+        delta = model.layers[1].backward(
+            delta, model.learning_rate, momentum_gamma=0, l1=0, l2=0
+        )
         if layer == 1:
-            grad = - model.layers[1].gradient[i][j]
+            grad = -model.layers[1].gradient[i][j]
 
-        delta = model.layers[0].backward(delta, model.learning_rate,
-                                         momentum_gamma=0, l1=0, l2=0)
+        delta = model.layers[0].backward(
+            delta, model.learning_rate, momentum_gamma=0, l1=0, l2=0
+        )
         if layer == 0:
-            grad = - model.layers[0].gradient[i][j]
+            grad = -model.layers[0].gradient[i][j]
 
         approxs.append(approx)
         grads.append(grad)
         diffs.append(np.abs(approx - grad))
 
     for i in range(len(grads)):
-        print("Actual Gradient: {: 8.12f}, Approximation Gradient {: 8.12f}, Absolute Difference {: 8.15f}".format(grads[i], approxs[i], diffs[i]))
+        print(
+            "Actual Gradient: {: 8.12f}, Approximation Gradient {: 8.12f}, Absolute Difference {: 8.15f}".format(
+                grads[i], approxs[i], diffs[i]
+            )
+        )
 
     return 1
     raise NotImplementedError("check_grad not implemented.")

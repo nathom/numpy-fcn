@@ -1,4 +1,3 @@
-import json
 import os
 import pickle
 
@@ -8,7 +7,6 @@ import pandas as pd
 import yaml
 
 import constants
-from constants import save_location
 
 
 def load_config(path):
@@ -21,6 +19,7 @@ def load_config(path):
         yaml - yaml object containing the config file
     """
     return yaml.load(open(path, "r"), Loader=yaml.SafeLoader)
+
 
 def normalize_data(inp):
     """
@@ -40,6 +39,7 @@ def normalize_data(inp):
     normalized_data = (inp - mean_val) / std_dev
 
     return normalized_data
+
 
 def one_hot_encoding(labels, num_classes=10):
     """
@@ -350,27 +350,7 @@ def load_data(path):
     )
 
 
-def save_loss_accuracy(test_loss, test_acc, val_loss, val_acc):
-    fn = os.path.join(save_location, "loss_acc_over_epochs.json")
-    info = {
-        "test_loss": test_loss,
-        "test_acc": test_acc,
-        "val_loss": val_loss,
-        "val_acc": val_acc,
-    }
-    with open(fn, "w") as f:
-        json.dump(info, f)
-
 def digit_show(x, y):
-    with open(raw_path, "rb") as f:
-        train_images, train_labels, test_images, test_labels = pickle.load(f)
-
-    n = x_train[0]
-    util.digit_show(n, "2")
-    print(np.mean(n))
-    print(np.std(n))
-    return 1
-
     print(f"Correct: {y}")
     import matplotlib.pyplot as plt
 

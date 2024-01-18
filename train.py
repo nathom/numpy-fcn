@@ -2,7 +2,7 @@ import copy
 
 from tqdm import tqdm
 
-from neuralnet import NeuralNetwork
+from neural_network import NeuralNetwork
 
 
 def model_train(
@@ -77,11 +77,11 @@ def model_train(
                 x_train_batch = x_train[i : i + batch_size]
                 y_train_batch = y_train[i : i + batch_size]
 
-                model.forward_batch(x_train_batch)
+                model.forward(x_train_batch)
                 losses = model.current_loss(y_train_batch)
                 train_loss += losses.sum()
                 correct += model.num_correct(y_train_batch)
-                model.backward_batch(gamma=gamma, targets=y_train_batch, l1=l1, l2=l2)
+                model.backward(gamma=gamma, targets=y_train_batch, l1=l1, l2=l2)
                 model.update_weights()
 
             n = len(x_train)
@@ -90,7 +90,7 @@ def model_train(
             epoch_acc = correct / n
             train_epoch_accuracy.append(epoch_acc)  # accuracy at end of epoch
 
-            model.forward_batch(x_valid)
+            model.forward(x_valid)
             val_loss = model.current_loss(y_valid)
             correct = model.num_correct(y_valid)
 
@@ -147,7 +147,7 @@ def model_test(model: NeuralNetwork, X_test, y_test):
     """
 
     N = X_test.shape[0]
-    model.forward_batch(X_test)
+    model.forward(X_test)
     loss = model.current_loss(y_test).sum()
     correct = model.num_correct(y_test)
     return correct / N, loss / N

@@ -9,7 +9,7 @@ from constants import (
     dataset_dir,
     models_dir,
 )
-from neuralnet import NeuralNetwork
+from neural_network import NeuralNetwork
 from train import model_test, model_train
 
 
@@ -76,10 +76,6 @@ def main(args):
             with open(path, "wb") as file:
                 pickle.dump([model, tl, ta, vl, va], file)
                 print(f"Trained model saved at {path}")
-
-    # Model is loaded
-
-    util.save_loss_accuracy(tl, ta, vl, va)
 
     if args.plot:
         # use correct config for early stop X on plot
