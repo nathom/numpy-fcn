@@ -2,11 +2,11 @@ layer_specs: [784, 128, 10]
 
 # Type of non-linear activation function to be used for the layers.
 # activation: "tanh"
-activation: "sigmoid"
-# activation: "ReLU"
+# activation: "sigmoid"
+activation: "ReLU"
 
 # The learning rate to be used for training.
-learning_rate: 0.001
+learning_rate: 0.0001
 
 # Number of training samples per batch to be passed to network
 batch_size: 128
