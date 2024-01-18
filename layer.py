@@ -52,8 +52,7 @@ class Layer:
             this_delta = self.activation.backward(self.a) * next_delta
 
         gradient = self.x.T @ this_delta - l1 - l2 * self.w
-        if momentum_gamma > 0.0:
-            self.dw *= momentum_gamma
+        self.dw *= momentum_gamma
         self.dw += learning_rate * gradient
         return this_delta @ self.w[:-1, :].T
 
