@@ -60,7 +60,7 @@ class Activation:
         raise Exception
 
     def sigmoid(self, x):
-        return 1.0 / (1.0 + np.exp(x))
+        return 1.0 / (1.0 + np.exp(-x))
 
     def tanh(self, x):
         return np.tanh(x)
@@ -81,7 +81,8 @@ class Activation:
         """
         Compute the gradient for sigmoid here.
         """
-        return self.sigmoid(x) * (1.0 - self.sigmoid(x))
+        s = self.sigmoid(x)
+        return s * (-s + 1.0)
 
     def grad_tanh(self, x):
         """

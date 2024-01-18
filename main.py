@@ -89,7 +89,8 @@ def main(args):
     test_acc, test_loss = model_test(model, x_test, y_test)
 
     # Print test accuracy and test loss
-    print("Test Accuracy:", test_acc, " Test Loss:", test_loss)
+    print(f"Test Accuracy: {test_acc*100:.2f}%")
+    print(f"Test loss: {test_loss*100:.2f}%")
 
 
 if __name__ == "__main__":
