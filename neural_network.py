@@ -64,6 +64,16 @@ class NeuralNetwork:
         correct_vec = np.argmax(self.y, axis=1) == np.argmax(targets, axis=1)
         return correct_vec.sum()
 
+    def get_failed_indices(
+        self, targets: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Return (y_hat, y) for all failed images"""
+        assert self.y is not None
+        y_hats = np.argmax(self.y, axis=1)
+        ys = np.argmax(targets, axis=1)
+        i = y_hats != ys
+        return y_hats[i], ys[i], i
+
     def backward(self, l1: float, l2: float, gamma, targets):
         delta = self.output_loss(self.y, targets)
         for layer in reversed(self.layers):

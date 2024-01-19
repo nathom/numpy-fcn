@@ -2,6 +2,8 @@ import argparse
 import os
 import pickle
 
+import numpy as np
+
 import gradient
 import util
 from constants import (
@@ -10,6 +12,7 @@ from constants import (
     models_dir,
 )
 from neural_network import NeuralNetwork
+from slideshow import show_slideshow
 from train import model_test, model_train
 
 
@@ -90,7 +93,52 @@ def main(args):
 
     # Print test accuracy and test loss
     print(f"Test Accuracy: {test_acc*100:.2f}%")
-    print(f"Test loss: {test_loss*100:.2f}%")
+    print(f"Test loss: {test_loss:.2f}")
+
+    if args.show_fails:
+        model.forward(x_test)
+        y_hats, ys, inds = model.get_failed_indices(y_test)
+        titles = [
+            f"[{i}/{len(y_hats)}] Model guessed: {y_hat}, correct: {y}"
+            for i, (y_hat, y) in enumerate(zip(y_hats, ys))
+        ]
+        imgs = x_test[inds]
+        show_slideshow(imgs, titles)
+
+    if args.compare:
+        path = os.path.join(models_dir, args.compare + ".pkl")
+        if os.path.exists(path):
+            print(f"Loading cached model from {path}")
+            with open(path, "rb") as f:
+                model2, tl, ta, vl, va = pickle.load(f)
+        else:
+            raise Exception("File saved_model.pkl does not exist.")
+
+        model.forward(x_test)
+        model2.forward(x_test)
+        _, _, inds = model.get_failed_indices(y_test)
+        _, _, inds2 = model2.get_failed_indices(y_test)
+
+        imgs = []
+        titles = []
+        for i, (i1, i2) in enumerate(zip(inds, inds2)):
+            if not i1 and not i2:
+                continue
+            g1 = np.argmax(model.y[i])
+            g2 = np.argmax(model2.y[i])
+            c = np.argmax(y_test[i])
+            imgs.append(x_test[i])
+            if g1 == c:
+                winner = args.load
+            elif g2 == c:
+                winner = args.compare
+            else:
+                winner = "NOBODY"
+            titles.append(
+                f"Winner: {winner}\n{args.load} guessed {g1}. {args.compare} guessed {g2}. Correct is {c}"
+            )
+
+        show_slideshow(imgs, titles)
 
 
 if __name__ == "__main__":
@@ -122,6 +170,16 @@ if __name__ == "__main__":
         "--grad",
         action="store_true",
         help="Runs numerical approximation test.",
+    )
+    parser.add_argument(
+        "--show-fails",
+        action="store_true",
+        help="Show slideshow of failed digits.",
+    )
+    parser.add_argument(
+        "--compare",
+        type=str,
+        help="Compare the performance of this model with the one loaded in a slideshow.",
     )
     args = parser.parse_args()
     main(args)

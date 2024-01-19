@@ -109,16 +109,16 @@ def model_train(
             else:
                 current_patience += 1
 
+            bar.desc = (
+                f"T: {epoch_acc*100:.2f}%, V: {val_acc*100:.2f}%, P: {current_patience}"
+            )
+            bar.update(1)
+
             if current_patience >= patience_limit:
                 print(
                     f"Early stopping. Bad performance for more than {patience_limit} consecutive epochs."
                 )
                 break
-
-            bar.desc = (
-                f"T: {epoch_acc*100:.2f}%, V: {val_acc*100:.2f}%, P: {current_patience}"
-            )
-            bar.update(1)
 
     assert current_best_model is not None
     return (
