@@ -5,7 +5,7 @@ images: np.ndarray
 img_titles: list[str]
 
 
-def show_slideshow(imgs: np.ndarray, titles: list[str]):
+def show_slideshow(imgs: np.ndarray | list[np.ndarray], titles: list[str]):
     i = 0
 
     def fig1(fig):

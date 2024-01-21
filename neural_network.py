@@ -9,50 +9,40 @@ class NeuralNetwork:
     Create a Neural Network specified by the network configuration mentioned in the config yaml file.
     """
 
-    __slots__ = ["layers", "x", "y", "learning_rate"]
-
     def __init__(self, config):
         """
         Create the Neural Network using config.
         """
-        self.layers: list[Layer] = []  # Store all layers in this list.
-        num_layers = len(config["layer_specs"]) - 1  # Set num layers here
-        self.x = None  # Save the input to forward in this
-        self.y = None  # For saving the output vector of the model
+        self.y: np.ndarray  # For saving the output vector of the model
         self.learning_rate: float = config["learning_rate"]
 
-        # Add layers specified by layer_specs.
-        for i in range(num_layers):
-            if i < num_layers - 1:
-                self.layers.append(
-                    Layer(
-                        config["layer_specs"][i],
-                        config["layer_specs"][i + 1],
-                        Activation(config["activation"]),
-                    )
-                )
-            elif i == num_layers - 1:
-                self.layers.append(
-                    Layer(
-                        config["layer_specs"][i],
-                        config["layer_specs"][i + 1],
-                        Activation("output"),
-                    )
-                )
+        num_layers = len(config["layer_specs"]) - 1  # Set num layers here
+        specs = config["layer_specs"]
+        activation = config["activation"]
+        self.layers = [
+            Layer(specs[i], specs[i + 1], Activation(activation))
+            for i in range(num_layers - 1)
+        ]
+        self.layers.append(
+            Layer(specs[num_layers - 1], specs[num_layers], Activation("output"))
+        )
 
     def forward(self, x_batch):
         output = x_batch
         for layer in self.layers:
-            output = np.column_stack((output, np.ones((output.shape[0],))))
-            output = layer.forward_batch(output)
+            output = self.append_bias(output)
+            output = layer.forward(output)
 
         self.y = output
+
+    @staticmethod
+    def append_bias(x):
+        return np.column_stack((x, np.ones((x.shape[0],))))
 
     def current_loss(self, targets: np.ndarray) -> np.ndarray:
         """Return the loss for the current y."""
         epsilon = 1e-15
         # avoid log(0.0)
-        assert self.y is not None
         outputs = np.clip(self.y, epsilon, 1 - epsilon)
         return -np.sum(targets * np.log(outputs), axis=1)
 
@@ -77,7 +67,7 @@ class NeuralNetwork:
     def backward(self, l1: float, l2: float, gamma, targets):
         delta = self.output_loss(self.y, targets)
         for layer in reversed(self.layers):
-            delta = layer.backward_batch(delta, self.learning_rate, gamma, l1, l2)
+            delta = layer.backward(delta, self.learning_rate, gamma, l1, l2)
 
     def update_weights(self):
         for layer in self.layers:

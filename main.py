@@ -16,11 +16,7 @@ from slideshow import show_slideshow
 from train import model_test, model_train
 
 
-# TODO
 def main(args):
-    # Read the required config
-    # Create different config files for different experiments
-
     if args.config is None:
         raise Exception("Specify a config name to use")
 
@@ -29,16 +25,12 @@ def main(args):
 
     config_fn = args.config
 
-    # Load the data
     x_train, y_train, x_valid, y_valid, x_test, y_test = util.load_data(
         path=dataset_dir
     )
 
-    # Load the configuration from the corresponding yaml file. Specify the file path and name
-    assert config_dir is not None
     config = util.load_config(os.path.join(config_dir, config_fn))
 
-    # Create a Neural Network object which will be our model
     model = NeuralNetwork(config)
 
     if args.load and args.save:
@@ -81,17 +73,14 @@ def main(args):
                 print(f"Trained model saved at {path}")
 
     if args.plot:
-        # use correct config for early stop X on plot
         if config["early_stop"]:
             es = len(tl) - 1
         else:
             es = None
         util.plot(tl, ta, vl, va, es)
 
-    # test the model
     test_acc, test_loss = model_test(model, x_test, y_test)
 
-    # Print test accuracy and test loss
     print(f"Test Accuracy: {test_acc*100:.2f}%")
     print(f"Test loss: {test_loss:.2f}")
 
@@ -142,12 +131,10 @@ def main(args):
 
 
 if __name__ == "__main__":
-    # Parse the input arguments
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--config",
         type=str,
-        # default="test_momentum",
         help="Specify the config that you want to run. Dont have to include .yaml extension",
     )
     parser.add_argument(
