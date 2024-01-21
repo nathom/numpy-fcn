@@ -5,18 +5,11 @@ from layer import Layer
 
 
 class NeuralNetwork:
-    """
-    Create a Neural Network specified by the network configuration mentioned in the config yaml file.
-    """
-
     def __init__(self, config):
-        """
-        Create the Neural Network using config.
-        """
-        self.y: np.ndarray  # For saving the output vector of the model
+        self.y: np.ndarray  # Last computed output
         self.learning_rate: float = config["learning_rate"]
 
-        num_layers = len(config["layer_specs"]) - 1  # Set num layers here
+        num_layers = len(config["layer_specs"]) - 1
         specs = config["layer_specs"]
         activation = config["activation"]
         self.layers = [
@@ -40,7 +33,6 @@ class NeuralNetwork:
         return np.column_stack((x, np.ones((x.shape[0],))))
 
     def current_loss(self, targets: np.ndarray) -> np.ndarray:
-        """Return the loss for the current y."""
         epsilon = 1e-15
         # avoid log(0.0)
         outputs = np.clip(self.y, epsilon, 1 - epsilon)
@@ -57,12 +49,12 @@ class NeuralNetwork:
     def get_failed_indices(
         self, targets: np.ndarray
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Return (y_hat, y) for all failed images"""
+        """Return (y_hat, y) for all failed images and inds (boolean array) for their indices."""
         assert self.y is not None
         y_hats = np.argmax(self.y, axis=1)
         ys = np.argmax(targets, axis=1)
-        i = y_hats != ys
-        return y_hats[i], ys[i], i
+        inds = y_hats != ys
+        return y_hats[inds], ys[inds], inds
 
     def backward(self, l1: float, l2: float, gamma, targets):
         delta = self.output_loss(self.y, targets)

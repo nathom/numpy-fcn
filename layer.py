@@ -32,9 +32,10 @@ class Layer:
         else:
             this_delta = self.activation.backward(self.a) * next_delta
 
-        gradient = self.x.T @ this_delta - l1 - l2 * self.w
+        weight_decay = l1 + 2.0 * l2 * self.w
+        gradient = self.x.T @ this_delta
         self.dw *= momentum_gamma
-        self.dw += learning_rate * gradient
+        self.dw += learning_rate * gradient - weight_decay
         return this_delta @ self.w[:-1, :].T
 
     def get_gradient(self, next_delta):
