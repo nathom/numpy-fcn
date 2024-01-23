@@ -49,8 +49,8 @@ of the momentum.
 		\For{$j = 1$ to $N$ in steps of B}
 		\State start = $j$
 		\State end = $j$ + B
-		\State $\Delta_{j+B} = \sum_{n = \text{start}}^{end} \nabla E^{(n)}(w)$
-		\State $w_{t + 1} = w_t - (\alpha \Delta_{j+B} + \gamma \Delta_{j})$
+		\State $\Delta_{end} = \sum_{n = start}^{end} \nabla E^{(n)}(w)$
+		\State $w_{t + 1} = w_t - (\alpha \Delta_{end} + \gamma \Delta_{start})$
 		\EndFor
 		\EndFor
 	\end{algorithmic}

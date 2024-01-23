@@ -1,9 +1,9 @@
 \section{Regularization Experiments}
 
-Another hyperparameter that may help improve generalization includes
+Another hyperparameter that may help improve generalization is
 regularization. We introduce a new term in the computation of error, $\lambda C$
 that measures the \textbf{complexity} of the model. Here, $\lambda$ is the
-hyperparameter we tune (typically a small value $1e^{-4}$) to adjust the
+hyperparameter we tune (typically a small value) to adjust the
 strength of the regularization. Altogether, we have a new measure of error
 
 \begin{equation*}
@@ -20,7 +20,7 @@ $L_1$ regularization seeks to minimize $C = |W|$. Therefore,
 		\frac{\partial J}{\partial w_{ij}} & = \nabla E^{(n)}(w_{ij}) + \lambda
 		\frac{\partial C}{\partial w_{ij}}                                      \\
 		                                   & = \nabla E^{(n)}(w_{ij}) + \lambda
-		\mathbf{1}                                                              \\
+		\text{sign}  (w_{ij})                                                   \\
 	\end{aligned}
 \end{equation*}
 
@@ -30,9 +30,9 @@ hand, $L_2$ regularization seeks to minimize $C = \| W \|^2_2$.
 \begin{equation*}
 	\begin{aligned}
 		\frac{\partial J}{\partial w_{ij}} & = \nabla E^{(n)}(w_{ij}) + \lambda
-		\frac{\partial C}{\partial w_{ij}}                                      \\
-		                                   & = \nabla E^{(n)}(w_{ij}) + \lambda
-		\left( 2  W \right)                                                     \\
+		\frac{\partial C}{\partial w_{ij}}                                        \\
+		                                   & = \nabla E^{(n)}(w_{ij}) + 2 \lambda
+		w_{ij}                                                                    \\
 	\end{aligned}
 \end{equation*}
 
