@@ -87,12 +87,10 @@ def main(args):
     if args.show_fails:
         model.forward(x_test)
         y_hats, ys, inds = model.get_failed_indices(y_test)
-        titles = [
-            f"[{i}/{len(y_hats)}] Model guessed: {y_hat}, correct: {y}"
-            for i, (y_hat, y) in enumerate(zip(y_hats, ys))
-        ]
+        titles = [f"Guess: {y_hat} Correct: {y}" for y_hat, y in zip(y_hats, ys)]
         imgs = x_test[inds]
         show_slideshow(imgs, titles)
+        util.tile_images(imgs[:42], titles[:42])
 
     if args.compare:
         path = os.path.join(models_dir, args.compare + ".pkl")
@@ -128,6 +126,21 @@ def main(args):
             )
 
         show_slideshow(imgs, titles)
+
+    if args.tile:
+        model.forward(x_test)
+        y_hats, ys, inds = model.get_failed_indices(y_test)
+        loss = model.current_loss(y_test)
+        sort_loss_inds = np.argsort(loss)[-42:]
+        imgs = []
+        titles = []
+        for i in sort_loss_inds:
+            imgs.append(x_test[i])
+            g = np.argmax(model.y[i])
+            c = np.argmax(y_test[i])
+            titles.append(f"Guess: {g} Correct: {c}")
+
+        util.tile_images(imgs, titles)
 
 
 if __name__ == "__main__":
@@ -167,6 +180,11 @@ if __name__ == "__main__":
         "--compare",
         type=str,
         help="Compare the performance of this model with the one loaded in a slideshow.",
+    )
+    parser.add_argument(
+        "--tile",
+        action="store_true",
+        help="Tile the images that were confusing.",
     )
     args = parser.parse_args()
     main(args)

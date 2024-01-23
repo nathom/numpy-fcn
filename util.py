@@ -357,3 +357,22 @@ def digit_show(x, y):
     plt.imshow(x.reshape(28, 28), cmap="gray")
     plt.axis("off")  # Turn off axis labels
     plt.show()
+
+
+def tile_images(image_list, caption_list):
+    # Assuming you have a list of 42 grayscale images and their captions
+    # Replace 'image_list' and 'caption_list' with your actual data
+
+    # Create a figure with a grid layout
+    fig, axes = plt.subplots(7, 6, figsize=(12, 14))
+
+    for i, ax in enumerate(axes.flat):
+        # Display each grayscale image
+        ax.imshow(image_list[i].reshape(28, 28), cmap="gray")
+        ax.axis("off")  # Turn off axis labels
+
+        # Add caption below each image
+        ax.set_title(caption_list[i], fontsize=8, pad=2)
+
+    plt.tight_layout()
+    plt.show()
