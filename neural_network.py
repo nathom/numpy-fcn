@@ -56,7 +56,7 @@ class NeuralNetwork:
         inds = y_hats != ys
         return y_hats[inds], ys[inds], inds
 
-    def backward(self, l1: float, l2: float, gamma, targets):
+    def backward(self, l1: float, l2: float, gamma: float, targets: np.ndarray):
         delta = self.output_loss(self.y, targets)
         for layer in reversed(self.layers):
             delta = layer.backward(delta, self.learning_rate, gamma, l1, l2)
