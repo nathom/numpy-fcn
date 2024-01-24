@@ -90,7 +90,6 @@ def main(args):
         titles = [f"Guess: {y_hat} Correct: {y}" for y_hat, y in zip(y_hats, ys)]
         imgs = x_test[inds]
         show_slideshow(imgs, titles)
-        util.tile_images(imgs[:42], titles[:42])
 
     if args.compare:
         path = os.path.join(models_dir, args.compare + ".pkl")
@@ -128,10 +127,11 @@ def main(args):
         show_slideshow(imgs, titles)
 
     if args.tile:
+        n_images = 36
         model.forward(x_test)
         y_hats, ys, inds = model.get_failed_indices(y_test)
         loss = model.current_loss(y_test)
-        sort_loss_inds = np.argsort(loss)[-42:]
+        sort_loss_inds = np.argsort(loss)[-n_images:]
         imgs = []
         titles = []
         for i in sort_loss_inds:

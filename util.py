@@ -14,6 +14,7 @@ def load_config(path):
     Loads the config yaml from the specified path
 
     args:
+    ----
         path - Complete path of the config yaml file to be loaded
     returns:
         yaml - yaml object containing the config file
@@ -24,12 +25,15 @@ def load_config(path):
 def normalize_data(inp):
     """
     TODO
+    ----
     Normalizes image pixels here to have 0 mean and unit variance.
 
     args:
+    ----
         inp : N X d 2D array where N is the number of examples and d is the number of dimensions
 
     returns:
+    -------
         normalized inp: N X d 2D array
 
     """
@@ -44,13 +48,16 @@ def normalize_data(inp):
 def one_hot_encoding(labels, num_classes=10):
     """
     TODO
+    ----
     Encodes labels using one hot encoding.
 
     args:
+    ----
         labels : N dimensional 1D array where N is the number of examples
         num_classes: Number of distinct labels that we have (10 for MNIST)
 
     returns:
+    -------
         oneHot : N X num_classes 2D array
     """
     N = len(labels)
@@ -64,10 +71,12 @@ def one_hot_encoding(labels, num_classes=10):
 def append_bias(X):
     """
     TODO
+    ----
     Appends bias to the input
     args:
         X (N X d 2D Array)
     returns:
+    -------
         X_bias (N X (d+1)) 2D Array
     """
     # return np.column_stack((X, np.ones((X.shape[0], 1))))
@@ -258,6 +267,7 @@ def load_data(path):
     Loads, splits our dataset - MNIST into train, val and test sets and normalizes them
 
     args:
+    ----
         path: Path to MNIST dataset
     returns:
         train_normalized_images, train_one_hot_labels, val_normalized_images, val_one_hot_labels,  test_normalized_images, test_one_hot_labels
@@ -304,10 +314,9 @@ def load_data(path):
         )
 
         # Preprocess data
+
         train_normalized_images = normalize_data(train_images)  # very expensive
-        print(train_labels[0])
         train_one_hot_labels = one_hot_encoding(train_labels, num_classes=10)  # (n, 10)
-        print(train_one_hot_labels[0])
 
         val_normalized_images = normalize_data(val_images)
         val_one_hot_labels = one_hot_encoding(val_labels, num_classes=10)  # (n, 10)
@@ -364,7 +373,7 @@ def tile_images(image_list, caption_list):
     # Replace 'image_list' and 'caption_list' with your actual data
 
     # Create a figure with a grid layout
-    fig, axes = plt.subplots(7, 6, figsize=(12, 14))
+    fig, axes = plt.subplots(6, 6, figsize=(12, 14))
 
     for i, ax in enumerate(axes.flat):
         # Display each grayscale image
