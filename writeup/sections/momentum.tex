@@ -1,31 +1,3 @@
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/no_momentum_no_early_stop.png}
-	\caption{Accuracy and Loss without momentum or early stopping}
-	\label{fig:no_momentum_no_early_stop}
-\end{figure}
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/momentum_no_early_stop.png}
-	\caption{Accuracy and Loss with momentum and without early stopping}
-	\label{fig:momentum_no_early_stop}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/early_stop_no_momentum.png}
-	\caption{Accuracy and Loss with early stopping and without momentum}
-	\label{fig:early_stop_no_momentum}
-\end{figure}
-
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/momentum_early_stop.png}
-	\caption{Accuracy and Loss with early stopping and momentum}
-	\label{fig:momentum_early_stop}
-\end{figure}
-
 \section{Momentum Experiments}
 
 \subsection{Background}
@@ -69,19 +41,51 @@ abort training and keep the weights with the lowest validation loss.
 
 Our initial performance, with $\alpha = 0.001$, resulted in test accuracy of $97.68\%$\cref{fig:no_momentum_no_early_stop}.
 
+
 \subsubsection{With Momentum}
 
 Adding momentum, with $\gamma = 0.9$, resulted in a slightly worse test accuracy of $96.88\%$\cref{fig:momentum_no_early_stop}.
 
+\begin{figure}[H]
+	\begin{subfigure}{0.5\textwidth}
+		\centering
+		\includegraphics[width=1.0\textwidth]{./images/no_momentum_no_early_stop.png}
+		\caption{Accuracy and Loss without momentum or early stopping}
+		\label{fig:no_momentum_no_early_stop}
+	\end{subfigure}
+	\begin{subfigure}{0.5\textwidth}
+		\centering
+		\includegraphics[width=1.0\textwidth]{./images/momentum_no_early_stop.png}
+		\caption{Accuracy and Loss with momentum and without early stopping}
+		\label{fig:momentum_no_early_stop}
+	\end{subfigure}
+\end{figure}
+
 \subsubsection{With Early Stopping}
 
-If we have early stopping, with $E=3$, but no momentum we get a test accuracy of $97.77\%$\cref{fig:early_stop_no_momentum}.
+If we have early stopping, with $E=3$, but no momentum we get a test accuracy of $97.77\%$ \cref{fig:early_stop_no_momentum}.
+
+
 
 \subsubsection{With Momentum and Early Stopping}
 
 If we have both momentum and early stopping, with the same hyperparameters specified above,
 we get a test accuracy of $96.62\%$\cref{fig:momentum_early_stop}.
 
+\begin{figure}[H]
+	\begin{subfigure}{0.5\textwidth}
+		\centering
+		\includegraphics[width=1.0\textwidth]{./images/early_stop_no_momentum.png}
+		\caption{Accuracy and Loss with early stopping and without momentum}
+		\label{fig:early_stop_no_momentum}
+	\end{subfigure}
+	\begin{subfigure}{0.5\textwidth}
+		\centering
+		\includegraphics[width=1.0\textwidth]{./images/momentum_early_stop.png}
+		\caption{Accuracy and Loss with early stopping and momentum}
+		\label{fig:momentum_early_stop}
+	\end{subfigure}
+\end{figure}
 
 \subsection{Observations}
 

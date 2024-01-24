@@ -1,19 +1,5 @@
 \section{Softmax Regression}
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/loss.png}
-	\caption{Training/Validation Loss/Accuracy over 100 Epochs}
-	\label{fig:loss}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/acc.png}
-	\caption{Training/Validation Accuracy over 100 Epochs}
-	\label{fig:acc}
-\end{figure}
-
 \subsection{Background}
 Firstly, we perform softmax regression on a single-layer neural network (i.e.
 input layer directly connects to output layer). Given an input $x^{(n)}$ and $c$
@@ -76,3 +62,18 @@ In pseudocode, we have
 In a single layer neural network as defined in \texttt{./config\_4.yaml}, we
 obtain the following results using softmax regression over 100 epochs. We
 plot loss versus epochs \cref{fig:loss} and accuracy versus epochs \cref{fig:acc}.
+
+\begin{figure}[H]
+	\begin{subfigure}{0.5\textwidth}
+		\centering
+		\includegraphics[width=1.0\textwidth]{./images/loss.png}
+		\caption{Training/Validation Loss/Accuracy over 100 Epochs}
+		\label{fig:loss}
+	\end{subfigure}
+	\begin{subfigure}{0.5\textwidth}
+		\centering
+		\includegraphics[width=1.0\textwidth]{./images/acc.png}
+		\caption{Training/Validation Accuracy over 100 Epochs}
+		\label{fig:acc}
+	\end{subfigure}
+\end{figure}

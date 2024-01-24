@@ -1,31 +1,3 @@
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/activation_tanh.png}
-	\caption{Accuracy and Loss using $\tanh(x)$ activation}
-	\label{fig:tanh}
-\end{figure}
-
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/activation_sigmoid.png}
-	\caption{Accuracy and Loss using $\texttt{sigmoid}(x)$ activation}
-	\label{fig:sigmoid}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/activation_relu.png}
-	\caption{Accuracy and Loss using $\texttt{ReLU}(x)$ activation, $\alpha = 0.001$}
-	\label{fig:relu}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/activation_relu2.png}
-	\caption{Accuracy and Loss using $\texttt{ReLU}(x)$ activation, $\alpha = 0.0001$}
-	\label{fig:relu2}
-\end{figure}
 \section{Activation Experiments}
 
 \subsection{Background}
@@ -106,6 +78,21 @@ L1 and L2 normalization are not used.
 
 We get test accuracy of $97.15\%$ and a stopping epoch of $10$\cref{fig:tanh}.
 
+
+\begin{figure}[H]
+	\begin{subfigure}{0.5\textwidth}
+		\centering
+		\includegraphics[width=1.0\textwidth]{./images/activation_tanh.png}
+		\caption{Accuracy and Loss using $\tanh(x)$ activation}
+		\label{fig:tanh}
+	\end{subfigure}
+	\begin{subfigure}{0.5\textwidth}
+		\centering
+		\includegraphics[width=1.0\textwidth]{./images/activation_sigmoid.png}
+		\caption{Accuracy and Loss using $\texttt{sigmoid}(x)$ activation}
+		\label{fig:sigmoid}
+	\end{subfigure}
+\end{figure}
 \subsubsection{Sigmoid}
 
 
@@ -118,9 +105,31 @@ low performance and early stopping epoch suggests the learning rate is too high.
 $\alpha = 0.0001$, we get an accuracy of $97.56\%$ on the test data and stopping
 epoch of $16$\cref{fig:relu2}.
 
+\begin{figure}[H]
+	\begin{subfigure}{0.5\textwidth}
+		\centering
+		\includegraphics[width=1.0\textwidth]{./images/activation_relu.png}
+		\caption{Accuracy and Loss using $\texttt{ReLU}(x)$ activation, $\alpha = 0.001$}
+		\label{fig:relu}
+	\end{subfigure}
+	\begin{subfigure}{0.5\textwidth}
+		\centering
+		\includegraphics[width=1.0\textwidth]{./images/activation_relu2.png}
+		\caption{Accuracy and Loss using $\texttt{ReLU}(x)$ activation, $\alpha = 0.0001$}
+		\label{fig:relu2}
+	\end{subfigure}
+\end{figure}
+
 \subsection{Observations}
 
 With $\alpha = 0.001$ both sigmoid and tanh perform similarly on the test data, but
 tanh converges much faster. ReLU performs fine, but poorly compared to the other two.
 After seeing that ReLU was converging very fast, we tried reducing the learning rate
 by a factor of 10. This brought ReLU's performance up to speed, but reduced its covergence time.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{./images/highest_loss_digits.png}
+	\caption{Digits in the test set with the highest loss}
+	\label{fig:highest_loss_digits}
+\end{figure}

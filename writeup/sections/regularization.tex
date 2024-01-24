@@ -2,7 +2,7 @@
 
 Another hyperparameter that may help improve generalization is
 regularization. We introduce a new term in the computation of error, $\lambda C$
-that measures the \textbf{complexity} of the model. Here, $\lambda$ is the
+that measures the complexity of the model. Here, $\lambda$ is the
 hyperparameter we tune (typically a small value) to adjust the
 strength of the regularization. Altogether, we have a new measure of error
 
@@ -22,20 +22,20 @@ $L_1$ regularization seeks to minimize $C = |W|$. Therefore,
 		                                   & = \nabla E^{(n)}(w_{ij}) + \lambda
 		\text{sign}  (w_{ij})                                                   \\
 	\end{aligned}
-  \label{eq:l1_l2}
+	\label{eq:l1_l2}
 \end{equation*}
 
 where the matrix of ones $\mathbf{1} \in \mathbb{R}^{i \times j}$. On the other
 hand, $L_2$ regularization seeks to minimize $C = \| W \|^2_2$.
 
-\begin{equation}
+\begin{equation*}
 	\begin{aligned}
 		\frac{\partial J}{\partial w_{ij}} & = \nabla E^{(n)}(w_{ij}) + \lambda
 		\frac{\partial C}{\partial w_{ij}}                                        \\
 		                                   & = \nabla E^{(n)}(w_{ij}) + 2 \lambda
 		w_{ij}                                                                    \\
 	\end{aligned}
-\end{equation}
+\end{equation*}
 
 \subsection{Experiments}
 In our previous experiments with momentum and early stopping, we achieved a test
@@ -44,31 +44,31 @@ experiments with approximately $10\%$ more epochs (8 total epochs). We achieve
 the following results
 
 \begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/l1_e2.png}
-	\caption{$L_1$ Regularization with $\lambda = 1e^{-2}$}
-  \label{fig:l1_1e2}
-\end{figure}
+	\begin{subfigure}{0.5\textwidth}
+		\centering
+		\includegraphics[width=1.0\textwidth]{./images/l1_e2.png}
+		\caption{$L_1$ Regularization with $\lambda = 1e^{-2}$}
+		\label{fig:l1_1e2}
+	\end{subfigure}
+	\begin{subfigure}{0.5\textwidth}
+		\centering
+		\includegraphics[width=1.0\textwidth]{./images/l1_e4.png}
+		\caption{$L_1$ Regularization with $\lambda = 1e^{-4}$}
+		\label{fig:l1_1e4}
+	\end{subfigure}
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/l1_e4.png}
-	\caption{$L_1$ Regularization with $\lambda = 1e^{-4}$}
-	\label{fig:l1_1e4}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/l2_e2.png}
-	\caption{$L_2$ Regularization with $\lambda = 1e^{-2}$}
-	\label{fig:l2_1e2}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{./images/l2_e4.png}
-	\caption{$L_2$ Regularization with $\lambda = 1e^{-4}$}
-	\label{fig:l2_1e4}
+	\begin{subfigure}{0.5\textwidth}
+		\centering
+		\includegraphics[width=1.0\textwidth]{./images/l2_e2.png}
+		\caption{$L_2$ Regularization with $\lambda = 1e^{-2}$}
+		\label{fig:l2_1e2}
+	\end{subfigure}
+	\begin{subfigure}{0.5\textwidth}
+		\centering
+		\includegraphics[width=1.0\textwidth]{./images/l2_e4.png}
+		\caption{$L_2$ Regularization with $\lambda = 1e^{-4}$}
+		\label{fig:l2_1e4}
+	\end{subfigure}
 \end{figure}
 
 \subsection{Observations}
